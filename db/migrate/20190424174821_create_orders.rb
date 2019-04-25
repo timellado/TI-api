@@ -1,7 +1,7 @@
 class CreateOrders < ActiveRecord::Migration[5.1]
   def change
     create_table :orders do |t|
-      t.int :Id_o
+      t.integer :Id_o
       t.string :Sku
       t.integer :Cantidad
       t.string :Almacen_id
