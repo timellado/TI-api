@@ -1,0 +1,85 @@
+require 'httparty'
+require 'hash'
+module Bodega    
+        include Sha1
+        $uri = "https://integracion-2019-dev.herokuapp.com/bodega/"
+        
+# GETS (Probados)
+        #obtiene todos los alamcenes
+        def all_almacenes()
+            sha1 = get_sha1('GET')
+            response = HTTParty.get($uri+'almacenes', 
+            :headers =>{'Content-Type' => 'application/json',
+            'Authorization'=> 'INTEGRACION grupo10:'+sha1})
+            results = response.parsed_response
+            puts results
+         end
+
+         #Obtiene skus con stock en 1 almacen
+         def get_skus_almacen(almacenid)
+            sha1 = get_sha1('GET'+almacenid)
+            response = HTTParty.get($uri+'skusWithStock?almacenId='+almacenid, 
+            :headers =>{'Content-Type' => 'application/json',
+            'Authorization'=> 'INTEGRACION grupo10:'+sha1})
+            results = response.parsed_response
+            puts results
+         end
+
+         #obtener productos no vencidos en unn almacen para 1 sku
+         def get_Prod_almacen_sku(almacenid, sku)
+            sha1 = get_sha1('GET'+almacenid+sku)
+            response = HTTParty.get($uri+'stock?almacenId='+almacenid+'&sku='+sku, 
+            :headers =>{'Content-Type' => 'application/json',
+            'Authorization'=> 'INTEGRACION grupo10:'+sha1})
+            results = response.parsed_response
+            puts results
+         end
+#MOVER (Probar)
+         #Mover Producto a otra bodega (despacho a otro grupo)
+         def Mover_bodega(almacenid, productid)
+            sha1 = get_sha1('POST'+productid+almacenid)
+            response = HTTParty.post($uri+'moveStockBodega', 
+            :headers =>{'Content-Type' => 'application/json',
+            'Authorization'=> 'INTEGRACION grupo10:'+sha1})
+            results = response.parsed_response
+            puts results
+         end
+
+         #Mover Producto a otro almacen propio
+         def Mover_almacen(almacenid, productid)
+            sha1 = get_sha1('POST'+productid+almacenid)
+            response = HTTParty.post($uri+'moveStock', 
+            :headers =>{'Content-Type' => 'application/json',
+            'Authorization'=> 'INTEGRACION grupo10:'+sha1})
+            results = response.parsed_response
+            puts results
+         end
+#Fabricar(Probar)
+        def Fabricar_gratis(sku, cantidad)
+            sha1 = get_sha1('PUT'+sku+cantidad)
+            response = HTTParty.post($uri+'fabrica/fabricarSinPago', 
+            :headers =>{'Content-Type' => 'application/json',
+            'Authorization'=> 'INTEGRACION grupo10:'+sha1})
+            results = response.parsed_response
+            puts results
+        end
+
+#Pedir a otro grupo(Probar)
+        def Pedir(sku, cantidad,grupo)
+            almacen_recep = "5cbd3ce444f67600049431e9"
+            url = 'tuerca'+grupo+'@ing.puc.cl/'
+            sha1 = get_sha1('PUT'+sku+cantidad)
+            response = HTTParty.post($uri+'orders', 
+            :headers =>{'Content-Type' => 'application/json'},
+            :body =>{
+                :sku => sku,
+                :cantidad => cantidad,
+                :almacenId =>almacenid
+            })
+            results = response.parsed_response
+            puts results
+        end
+
+
+end
+
