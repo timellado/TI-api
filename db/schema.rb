@@ -10,10 +10,35 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190424174821) do
+ActiveRecord::Schema.define(version: 20190426235503) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "groups", force: :cascade do |t|
+    t.integer "grupo"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "groups_products", force: :cascade do |t|
+    t.bigint "group_id"
+    t.bigint "product_id"
+    t.index ["group_id"], name: "index_groups_products_on_group_id"
+    t.index ["product_id"], name: "index_groups_products_on_product_id"
+  end
+
+  create_table "ingredients", force: :cascade do |t|
+    t.string "sku"
+    t.string "nombre"
+    t.integer "precio_venta"
+    t.integer "vencimiento"
+    t.float "espacio_ocupado_unidad"
+    t.integer "lote_produccion"
+    t.integer "tiempo_produccion"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "orders", force: :cascade do |t|
     t.integer "Id_o"
@@ -27,4 +52,27 @@ ActiveRecord::Schema.define(version: 20190424174821) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "products", force: :cascade do |t|
+    t.string "sku"
+    t.string "nombre"
+    t.integer "precio_venta"
+    t.integer "vencimiento"
+    t.float "espacio_ocupado_unidad"
+    t.integer "lote_produccion"
+    t.integer "tiempo_produccion"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "products_ingredients", force: :cascade do |t|
+    t.bigint "product_id"
+    t.bigint "ingredient_id"
+    t.index ["ingredient_id"], name: "index_products_ingredients_on_ingredient_id"
+    t.index ["product_id"], name: "index_products_ingredients_on_product_id"
+  end
+
+  add_foreign_key "groups_products", "groups"
+  add_foreign_key "groups_products", "products"
+  add_foreign_key "products_ingredients", "ingredients"
+  add_foreign_key "products_ingredients", "products"
 end
