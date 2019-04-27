@@ -1,5 +1,8 @@
 require 'inventory'
+require 'logica'
 class ApiController < ApplicationController
+include Inventory
+include Logica
 
   skip_before_action :verify_authenticity_token
 
@@ -30,16 +33,31 @@ class ApiController < ApplicationController
   def create_order
     #se crea la orden
     @order = Order.new(order_params)
+    if Logica.ver_sku(@order[:Sku],@order[:Cantidad])
+    ## agregar una función de enviar pedido
+    else 
+      render status: 200, json: {
+        sku: @order[:Sku],
+        cantidad: @order[:Cantidad],
+        almacenId: @order[:Almacen_id],
+        aceptado: false,
+        despachado: false,
+        precio: @order[:Precio]
+      }.to_json
+    end
+    
+
+
     #si se crea bien, se responde
     if @order.save
       render status: 200, json: {
         sku: @order[:Sku],
         cantidad: @order[:Cantidad],
         almacenId: @order[:Almacen_id],
-        aceptado: @order[:Aceptado],
+        aceptado: true,
+        ## revisar despachado
         despachado: @order[:Despachado],
         precio: @order[:Precio]
-
       }.to_json
     else
 
@@ -49,6 +67,4 @@ class ApiController < ApplicationController
   def order_params
       params.permit(:Id_o, :Sku, :Cantidad, :Almacen_id, :Aceptado,:Despachado,:Precio)
   end
-
-
 end
