@@ -76,7 +76,8 @@ module Bodega
         end
 
 #Pedir a otro grupo(Probar)
-        def Pedir(sku, cantidad,grupo)
+        def self.Pedir(sku, cantidad, grupo)
+          if grupo != 10
             almacen_recep = "5cbd3ce444f67600049431e9"
             url = 'tuerca'+grupo+'@ing.puc.cl/'
             sha1 = Sha1.get_sha1('PUT'+sku+cantidad)
@@ -88,7 +89,9 @@ module Bodega
                 :almacenId =>almacenid
             })
             results = response.parsed_response
+            return results
             #puts results
+          end
         end
 
 
