@@ -57,6 +57,14 @@ include Variable
         return lista_id
     end
 
+    def self.listar_sku_id_despacho(sku)
+        lista_id = []
+        ## Revisar almacenes
+        lista_id.concat (self.listar_no_vencidos(Variable.v_despacho,sku))
+        lista_id = lista_id.sort{ |a,b| a[1]<=> b[1]}
+        return lista_id
+    end
+
     def self.listar_no_vencidos(almacen_id,sku)
         lista_id = []
 
@@ -72,5 +80,13 @@ include Variable
         lista_ids_sku = self.listar_sku_id(sku)
         (0..cantidad-1).each{
             |i| Bodega.Mover_almacen(Variable.v_despacho,lista_ids_sku[i][0])}
+    end
+
+    def self.despachar_a_grupo(sku,cantidad,almacen_destino)
+        lista_id = listar_sku_id_despacho(sku)
+        (0..cantidad-1).each{
+           |d| Bodega.Mover_bodega(almacen_destino,lista_id[d][0])
+        }
+    
     end
 end

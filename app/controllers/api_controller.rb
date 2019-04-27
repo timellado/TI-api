@@ -38,20 +38,17 @@ include Variable
     #se crea la orden
     @order = Order.new(order_params)
 
-    ##@order.Aceptado = true
-    ##@order.Despachado = true
+
+
   ##
     ##logic = Logica.listar_sku_id("1001")
     ##puts logic
-    puts '------------------Antes-------------------------'
-    results = Bodega.get_skus_almacen(Variable.v_despacho)
-    puts results
 
     if Logica.sku_disponible(@order[:Sku],@order[:Cantidad])
       Logica.mover_productos_a_despacho(@order[:Sku],@order[:Cantidad])
-      puts '------------------Despues-------------------------'
-      results = Bodega.get_skus_almacen(Variable.v_despacho)
-      puts results
+      @order.Aceptado = true
+      Logica.despachar_a_grupo(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
+      @order.Despachado = true
     ## agregar una función de enviar pedido
     else 
     ##   render status: 200, json: {
