@@ -7,5 +7,11 @@ scheduler.every '2h' do
 end
 
 # scheduler.every '5s' do
-#   p "hola"
+#   producto = Product.find_by_sku("1007")
+#   #Pedir a otros grupos
+#   groups = producto.groups
+#   groups_id = groups.map{|m| m.id()}
+#   groups_id.each do |g|
+#     p g
+#   end
 # end

@@ -1,5 +1,6 @@
 require 'inventory'
 require 'stock_minimo'
+require 'rufus-scheduler'
 class ApplicationRecord < ActiveRecord::Base
   self.abstract_class = true
   include Inventory
@@ -12,25 +13,60 @@ class ApplicationRecord < ActiveRecord::Base
     stock_a_pedir = {}
     minimum_stock_list.each do |mins|
       sku_a_pedir = mins[0].to_s
-      cantidad_a_pedir = mins[1]*1.3.to_i
+      minimo = mins[1].to_f
+      if stock.key?(sku_a_pedir)
+        minimo -= stock[sku_a_pedir]
+      end
+      minimo = (minimo * 1.3).to_f
       producto = Product.find_by_sku(sku_a_pedir)
-      if producto.ingredients
-
-      end
-
-      if stock.key?(mins[0].to_s)
-        if stock[sku_a_pedir] < mins[1]
-          cantidad_a_pedir -= stock[sku_a_pedir]
-          self.pedir_producto(sku_a_pedir, cantidad_a_pedir)
-        end
+      factor =  (minimo / producto.lote_produccion).ceil
+      cantidad_a_pedir = producto.lote_produccion * factor
+      if stock_a_pedir.key?(sku_a_pedir)
+         stock_a_pedir[sku_a_pedir] += cantidad_a_pedir
       else
-        self.pedir_producto(sku_a_pedir, cantidad_a_pedir)
+        stock_a_pedir[sku_a_pedir] = cantidad_a_pedir
       end
+      if producto.ingredients
+        producto.ingredients.each do |i|
+          if stock_a_pedir.key?(i.sku.to_s)
+             stock_a_pedir[i.sku.to_s] += i.cantidad_para_lote * factor
+          else
+            stock_a_pedir[i.sku.to_s] = i.cantidad_para_lote * factor
+          end
+          productoi = Product.find_by_sku(i.sku.to_s)
+          factori = (stock_a_pedir[i.sku.to_s] / productoi.lote_produccion).ceil
+          if productoi.ingredients
+            productoi.ingredients.each do |j|
+              if stock_a_pedir.key?(j.sku.to_s)
+                 stock_a_pedir[j.sku.to_s] += j.cantidad_para_lote * factori
+              else
+                stock_a_pedir[j.sku.to_s] = j.cantidad_para_lote * factori
+              end
+              productoj = Product.find_by_sku(j.sku.to_s)
+              factorj = (stock_a_pedir[j.sku.to_s] / productoj.lote_produccion).ceil
+              if productoj.ingredients
+                productoj.ingredients.each do |k|
+                  if stock_a_pedir.key?(k.sku.to_s)
+                     stock_a_pedir[k.sku.to_s] += k.cantidad_para_lote * factorj
+                  else
+                    stock_a_pedir[k.sku.to_s] = k.cantidad_para_lote * factorj
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+    stock_a_pedir.each do |sku, cantidad|
+      self.pedir_producto(sku, cantidad)
     end
   end
   # problema del futuro
   def self.pedir_producto(sku, cantidad)
-    groups = Product.find_by_sku(sku).groups
+    producto = Product.find_by_sku(sku)
+    #Pedir a otros grupos
+    groups = producto.groups
     groups_id = groups.map{|m| m.id()}
     futuro_envio = false
     pedidos = []
@@ -44,8 +80,35 @@ class ApplicationRecord < ActiveRecord::Base
       end
     end
     if !futuro_envio
-
-      Bodega.Fabricar_gratis(sku, cantidad)
+      #Pedir en bodega
+      if sku > "1016"
+        ingredientes = producto.ingredients
+        factor = (cantidad / producto.lote_produccion).ceil
+        schedule = false
+        movidos = true
+        ingredientes.each do |i|
+          q_ingredient = ((i.cantidad_para_lote * factor) / i.lote_produccion).ceil * i.lote_produccion
+          if # sku_disponible(sku, q_ingredient)
+            #Mover productos solicitados a despacho
+            p "movido a despacho"
+          elsif !schedule
+            movidos = false
+            minutos = Product.find_by_sku(i.sku.to_s).tiempo_produccion
+            self.pedir_producto(i.sku, q_ingredient)
+            scheduler = Rufus::Scheduler.new
+            scheduler.in "#{minutos}m" do
+              self.pedir_producto(sku, cantidad)
+            end
+          end
+        end
+        if movidos
+          quantity = ((cantidad / producto.lote_produccion).ceil * producto.lote_produccion).to_i
+          Bodega.Fabricar_gratis(sku, quantity)
+        end
+      else
+        quantity = ((cantidad / producto.lote_produccion).ceil * producto.lote_produccion).to_i
+        Bodega.Fabricar_gratis(sku, quantity)
+      end
     end
   end
 end
