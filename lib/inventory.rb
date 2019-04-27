@@ -22,13 +22,13 @@ module Inventory
     almacenes_id.each do |k|
       results = JSON.parse(Bodega.get_skus_almacen(k).to_json)
       results.each do |i|
-        #if i["_id"] != Variable.v_despacho
+        if i["_id"] != Variable.v_despacho
           if diccionario_sku.key?(i["_id"])
             diccionario_sku[i["_id"]] += i["total"]
           else
             diccionario_sku[i["_id"]] = i["total"]
           end
-        #end      
+        end      
       end
     end
 
