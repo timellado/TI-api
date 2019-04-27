@@ -34,6 +34,7 @@ module Bodega
             :headers =>{'Content-Type' => 'application/json',
             'Authorization'=> 'INTEGRACION grupo10:'+sha1})
             results = response.parsed_response
+            return results
             #puts results
          end
 #MOVER (Probar)
@@ -48,12 +49,15 @@ module Bodega
          end
 
          #Mover Producto a otro almacen propio
-         def Mover_almacen(almacenid, productid)
-            sha1 = get_sha1('POST'+productid+almacenid)
+         def self.Mover_almacen(almacenid, productid)
+            sha1 = Sha1.get_sha1('POST'+productid+almacenid)
+            puts sha1
             response = HTTParty.post($uri+'moveStock',
-            :headers =>{'Content-Type' => 'application/json',
-            'Authorization'=> 'INTEGRACION grupo10:'+sha1})
+            :headers =>{'Content-Type' => 'application/json', 
+            'Authorization'=> 'INTEGRACION grupo10:'+sha1},
+            :body => {'productoId'=> productid, 'almacenId'=> almacenid}.to_json)
             results = response.parsed_response
+            return results
             #puts results
          end
 #Fabricar(Probar)

@@ -1,8 +1,10 @@
 require 'inventory'
 require 'logica'
+require 'bodega'
 class ApiController < ApplicationController
 include Inventory
 include Logica
+include Bodega
 
   skip_before_action :verify_authenticity_token
 
@@ -33,38 +35,40 @@ include Logica
   def create_order
     #se crea la orden
     @order = Order.new(order_params)
-    if Logica.ver_sku(@order[:Sku],@order[:Cantidad])
+
+    logic = Logica.listar_sku_id("1001")
+    puts logic
+    # if Logica.ver_sku(@order[:Sku],@order[:Cantidad])
     ## agregar una función de enviar pedido
-    else 
-      render status: 200, json: {
-        sku: @order[:Sku],
-        cantidad: @order[:Cantidad],
-        almacenId: @order[:Almacen_id],
-        aceptado: false,
-        despachado: false,
-        precio: @order[:Precio]
-      }.to_json
-    end
+    # else 
+    ##   render status: 200, json: {
+    ##     sku: @order[:Sku],
+    ##     cantidad: @order[:Cantidad],
+    ##     almacenId: @order[:Almacen_id],
+    ##     aceptado: false,
+    ##     despachado: false,
+    ##     precio: @order[:Precio]
+    ##   }.to_json
+    ## end
     
-
-
     #si se crea bien, se responde
     if @order.save
       render status: 200, json: {
         sku: @order[:Sku],
         cantidad: @order[:Cantidad],
         almacenId: @order[:Almacen_id],
-        aceptado: true,
+        aceptado: @order[:Aceptado],
         ## revisar despachado
         despachado: @order[:Despachado],
         precio: @order[:Precio]
       }.to_json
     else
-
+      render status: 200, json: {
+        sku: 'hola'}
     end
   end
 
   def order_params
-      params.permit(:Id_o, :Sku, :Cantidad, :Almacen_id, :Aceptado,:Despachado,:Precio)
+      params.permit(:Sku, :Cantidad, :Almacen_id,:Precio)
   end
 end
