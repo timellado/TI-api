@@ -14,7 +14,8 @@ include Almacen #todas las request a la bodega del profe estan en bodega.rb
     ## Se itera sobre los almacenesId provenientes de una lista que es retornada por la función
     ## get_almacenes, luego se llama a la Api del Profesor para pedir los Sku con sus stock
     ## de cada almacen, para luego guardarlos en un diccionario con el resumen total de todos los sku.
-    ## finalmente r Json retorna un json con los datos esperados
+    ## finalmente render Json retorna un json con los datos esperados
+    lista_stock = []
     diccionario_sku = {}
     diccionario_sku[3] = 62
     diccionario_sku[4] = 50
@@ -23,20 +24,21 @@ include Almacen #todas las request a la bodega del profe estan en bodega.rb
       results = JSON.parse(get_skus_almacen(k).to_json)
       results.each do |i|
         ## Arreglar if -> no está bien implementado
-        if diccionario_sku[i["_id"]["sku"]].empty? 
-
+        if diccionario_sku[i["_id"]["sku"]].empty?
           diccionario_sku[i["_id"]["sku"]] = i["total"]
         else
           diccionario_sku[i["_id"]["sku"]] += i["total"]
         end
       end
-
-      ##puts diccionario_sku
-    ##  
-    ##}
+    end
+    diccionario_sku.each do |k, v|
+      stock = {}
+      stock["sku"] = k
+      stock["total"] = v
+      lista_stock.push(stock)
     end
 
-    render json: diccionario_sku.to_json
+    render json: lista_stock.to_json
     ##results = JSON.parse(Fabricar_gratis('1016','80').to_json)
     ##render json: results
     ##results2 = JSON.parse(all_almacenes().to_json)
@@ -62,10 +64,10 @@ include Almacen #todas las request a la bodega del profe estan en bodega.rb
         aceptado: @order[:Aceptado],
         despachado: @order[:Despachado],
         precio: @order[:Precio]
-  
+
       }.to_json
     else
-    
+
     end
   end
 
