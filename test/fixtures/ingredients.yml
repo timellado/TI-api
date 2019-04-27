@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  sku: MyString
+  nombre: MyString
+  precio_venta: 1
+  vencimiento: 1
+  espacio_ocupado_unidad: 1.5
+  lote_produccion: 1
+  tiempo_produccion: 1
+
+two:
+  sku: MyString
+  nombre: MyString
+  precio_venta: 1
+  vencimiento: 1
+  espacio_ocupado_unidad: 1.5
+  lote_produccion: 1
+  tiempo_produccion: 1
