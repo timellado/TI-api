@@ -62,7 +62,7 @@ class ApplicationRecord < ActiveRecord::Base
       self.pedir_producto(sku, cantidad)
     end
   end
-  # problema del futuro
+  
   def self.pedir_producto(sku, cantidad)
     producto = Product.find_by_sku(sku)
     #Pedir a otros grupos
