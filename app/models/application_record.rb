@@ -1,10 +1,12 @@
 require 'inventory'
 require 'stock_minimo'
 require 'rufus-scheduler'
+require 'logica'
 class ApplicationRecord < ActiveRecord::Base
   self.abstract_class = true
   include Inventory
   include StockMinimo
+  include Logica
 
   def self.keep_minimum_stock
     minimum_stock_list = StockMinimo.get_minimum_stock
@@ -62,7 +64,7 @@ class ApplicationRecord < ActiveRecord::Base
       self.pedir_producto(sku, cantidad)
     end
   end
-  
+
   def self.pedir_producto(sku, cantidad)
     producto = Product.find_by_sku(sku)
     #Pedir a otros grupos
@@ -88,9 +90,8 @@ class ApplicationRecord < ActiveRecord::Base
         movidos = true
         ingredientes.each do |i|
           q_ingredient = ((i.cantidad_para_lote * factor) / i.lote_produccion).ceil * i.lote_produccion
-          if # sku_disponible(sku, q_ingredient)
-            #Mover productos solicitados a despacho
-            p "movido a despacho"
+          if Logica.sku_disponible(sku, q_ingredient)
+              Logica.mover_productos_a_despacho(sku, q_ingredient)
           elsif !schedule
             movidos = false
             minutos = Product.find_by_sku(i.sku.to_s).tiempo_produccion
