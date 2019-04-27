@@ -12,7 +12,8 @@ module Bodega
             :headers =>{'Content-Type' => 'application/json',
             'Authorization'=> 'INTEGRACION grupo10:'+sha1})
             results = response.parsed_response
-            puts results
+           # puts results
+            return results
          end
 
          #Obtiene skus con stock en 1 almacen
@@ -22,7 +23,8 @@ module Bodega
             :headers =>{'Content-Type' => 'application/json',
             'Authorization'=> 'INTEGRACION grupo10:'+sha1})
             results = response.parsed_response
-            puts results
+            return results
+            #puts results
          end
 
          #obtener productos no vencidos en unn almacen para 1 sku
@@ -32,7 +34,7 @@ module Bodega
             :headers =>{'Content-Type' => 'application/json',
             'Authorization'=> 'INTEGRACION grupo10:'+sha1})
             results = response.parsed_response
-            puts results
+            #puts results
          end
 #MOVER (Probar)
          #Mover Producto a otra bodega (despacho a otro grupo)
@@ -42,7 +44,7 @@ module Bodega
             :headers =>{'Content-Type' => 'application/json',
             'Authorization'=> 'INTEGRACION grupo10:'+sha1})
             results = response.parsed_response
-            puts results
+            #puts results
          end
 
          #Mover Producto a otro almacen propio
@@ -52,16 +54,20 @@ module Bodega
             :headers =>{'Content-Type' => 'application/json',
             'Authorization'=> 'INTEGRACION grupo10:'+sha1})
             results = response.parsed_response
-            puts results
+            #puts results
          end
 #Fabricar(Probar)
         def Fabricar_gratis(sku, cantidad)
             sha1 = get_sha1('PUT'+sku+cantidad)
-            response = HTTParty.post($uri+'fabrica/fabricarSinPago', 
+         #   puts sha1
+            response = HTTParty.put($uri+'fabrica/fabricarSinPago', 
             :headers =>{'Content-Type' => 'application/json',
-            'Authorization'=> 'INTEGRACION grupo10:'+sha1})
+            'Authorization'=> 'INTEGRACION grupo10:'+sha1},
+            :body => {'sku' => sku, 'cantidad' => cantidad}.to_json)
             results = response.parsed_response
-            puts results
+         #   puts results
+            return results
+            
         end
 
 #Pedir a otro grupo(Probar)
@@ -77,7 +83,7 @@ module Bodega
                 :almacenId =>almacenid
             })
             results = response.parsed_response
-            puts results
+            #puts results
         end
 
 
