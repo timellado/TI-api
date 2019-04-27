@@ -59,3 +59,4 @@ gem 'rubysl-cgi', '~> 2.0', '>= 2.0.1'
 gem 'openssl'
 
 gem "httparty"
+gem "rufus-scheduler"
