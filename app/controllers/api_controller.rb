@@ -1,9 +1,11 @@
 
 require 'bodega'
 require 'almacen'
+require 'product_sku'
 class ApiController < ApplicationController
-include Bodega
-include Almacen #todas las request a la bodega del profe estan en bodega.rb
+include Bodega #todas las request a la bodega del profe estan en bodega.rb
+include Almacen
+include ProductSKU
   skip_before_action :verify_authenticity_token
 
   def index
@@ -17,23 +19,28 @@ include Almacen #todas las request a la bodega del profe estan en bodega.rb
     ## finalmente render Json retorna un json con los datos esperados
     lista_stock = []
     diccionario_sku = {}
-    diccionario_sku[3] = 62
-    diccionario_sku[4] = 50
     almacenes_id = get_almacenes() ##Lista de todos los AlmacenesId
+    #obtener match sku -> producto, no hay otra forma de hacerlo por tema de que al iterar diccionario_sku
+    #sku_product no permite la llave si se crea como hash, por lo que hay que crearlo aca
+    sku_product = {}
+    sku_product_list = get_sku_product()
+    sku_product_list.each do |list|
+      sku_product[list[0].to_s] = list[1]
+    end
     almacenes_id.each do |k|
       results = JSON.parse(get_skus_almacen(k).to_json)
       results.each do |i|
-        ## Arreglar if -> no está bien implementado
-        if diccionario_sku[i["_id"]["sku"]].empty?
-          diccionario_sku[i["_id"]["sku"]] = i["total"]
+        if diccionario_sku.key?(i["_id"])
+          diccionario_sku[i["_id"]] += i["total"]
         else
-          diccionario_sku[i["_id"]["sku"]] += i["total"]
+          diccionario_sku[i["_id"]] = i["total"]
         end
       end
     end
     diccionario_sku.each do |k, v|
       stock = {}
       stock["sku"] = k
+      stock["nombre"] = sku_product[k]
       stock["total"] = v
       lista_stock.push(stock)
     end
