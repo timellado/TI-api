@@ -38,7 +38,7 @@ module Bodega
          end
 #MOVER (Probar)
          #Mover Producto a otra bodega (despacho a otro grupo)
-         def Mover_bodega(almacenid, productid)
+         def self.Mover_bodega(almacenid, productid)
             sha1 = get_sha1('POST'+productid+almacenid)
             response = HTTParty.post($uri+'moveStockBodega',
             :headers =>{'Content-Type' => 'application/json',
@@ -48,7 +48,7 @@ module Bodega
          end
 
          #Mover Producto a otro almacen propio
-         def Mover_almacen(almacenid, productid)
+         def self.Mover_almacen(almacenid, productid)
             sha1 = get_sha1('POST'+productid+almacenid)
             response = HTTParty.post($uri+'moveStock',
             :headers =>{'Content-Type' => 'application/json',
@@ -71,7 +71,8 @@ module Bodega
         end
 
 #Pedir a otro grupo(Probar)
-        def Pedir(sku, cantidad,grupo)
+        def self.Pedir(sku, cantidad, grupo)
+          if grupo != 10
             almacen_recep = "5cbd3ce444f67600049431e9"
             url = 'tuerca'+grupo+'@ing.puc.cl/'
             sha1 = get_sha1('PUT'+sku+cantidad)
@@ -83,7 +84,9 @@ module Bodega
                 :almacenId =>almacenid
             })
             results = response.parsed_response
+            return results
             #puts results
+          end
         end
 
 
