@@ -51,7 +51,7 @@ module Bodega
          #Mover Producto a otro almacen propio
          def self.Mover_almacen(almacenid, productid)
             sha1 = Sha1.get_sha1('POST'+productid+almacenid)
-            puts sha1
+            #puts sha1
             response = HTTParty.post($uri+'moveStock',
             :headers =>{'Content-Type' => 'application/json', 
             'Authorization'=> 'INTEGRACION grupo10:'+sha1},

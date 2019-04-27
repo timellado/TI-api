@@ -1,10 +1,12 @@
 require 'inventory'
 require 'logica'
 require 'bodega'
+require 'variable'
 class ApiController < ApplicationController
 include Inventory
 include Logica
 include Bodega
+include Variable
 
   skip_before_action :verify_authenticity_token
 
@@ -36,11 +38,22 @@ include Bodega
     #se crea la orden
     @order = Order.new(order_params)
 
-    logic = Logica.listar_sku_id("1001")
-    puts logic
-    # if Logica.ver_sku(@order[:Sku],@order[:Cantidad])
+    ##@order.Aceptado = true
+    ##@order.Despachado = true
+  ##
+    ##logic = Logica.listar_sku_id("1001")
+    ##puts logic
+    puts '------------------Antes-------------------------'
+    results = Bodega.get_skus_almacen(Variable.v_despacho)
+    puts results
+
+    if Logica.sku_disponible(@order[:Sku],@order[:Cantidad])
+      Logica.mover_productos_a_despacho(@order[:Sku],@order[:Cantidad])
+      puts '------------------Despues-------------------------'
+      results = Bodega.get_skus_almacen(Variable.v_despacho)
+      puts results
     ## agregar una función de enviar pedido
-    # else 
+    else 
     ##   render status: 200, json: {
     ##     sku: @order[:Sku],
     ##     cantidad: @order[:Cantidad],
@@ -49,7 +62,7 @@ include Bodega
     ##     despachado: false,
     ##     precio: @order[:Precio]
     ##   }.to_json
-    ## end
+    end
     
     #si se crea bien, se responde
     if @order.save
@@ -69,6 +82,7 @@ include Bodega
   end
 
   def order_params
-      params.permit(:Sku, :Cantidad, :Almacen_id,:Precio)
+    defaults = { Aceptado: false, Despachado: false}
+    params.permit(:Sku, :Cantidad, :Almacen_id, :Aceptado, :Despachado, :Precio).reverse_merge(defaults)
   end
 end
