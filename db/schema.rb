@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190426235503) do
+ActiveRecord::Schema.define(version: 20190427164952) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -30,14 +30,18 @@ ActiveRecord::Schema.define(version: 20190426235503) do
 
   create_table "ingredients", force: :cascade do |t|
     t.string "sku"
-    t.string "nombre"
-    t.integer "precio_venta"
-    t.integer "vencimiento"
-    t.float "espacio_ocupado_unidad"
     t.integer "lote_produccion"
-    t.integer "tiempo_produccion"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.float "unidades_bodega"
+    t.float "cantidad_para_lote"
+  end
+
+  create_table "ingredients_products", force: :cascade do |t|
+    t.bigint "ingredient_id"
+    t.bigint "product_id"
+    t.index ["ingredient_id"], name: "index_ingredients_products_on_ingredient_id"
+    t.index ["product_id"], name: "index_ingredients_products_on_product_id"
   end
 
   create_table "orders", force: :cascade do |t|
@@ -73,6 +77,8 @@ ActiveRecord::Schema.define(version: 20190426235503) do
 
   add_foreign_key "groups_products", "groups"
   add_foreign_key "groups_products", "products"
+  add_foreign_key "ingredients_products", "ingredients"
+  add_foreign_key "ingredients_products", "products"
   add_foreign_key "products_ingredients", "ingredients"
   add_foreign_key "products_ingredients", "products"
 end
