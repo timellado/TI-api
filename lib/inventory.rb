@@ -1,10 +1,13 @@
 require 'bodega'
 require 'almacen'
 require 'product_sku'
+require 'variable'
 module Inventory
   include Bodega #todas las request a la bodega del profe estan en bodega.rb
   include Almacen
   include ProductSKU
+  include Variable
+
   def self.get_inventory
     lista_stock = []
     diccionario_sku = {}
@@ -19,13 +22,16 @@ module Inventory
     almacenes_id.each do |k|
       results = JSON.parse(Bodega.get_skus_almacen(k).to_json)
       results.each do |i|
-        if diccionario_sku.key?(i["_id"])
-          diccionario_sku[i["_id"]] += i["total"]
-        else
-          diccionario_sku[i["_id"]] = i["total"]
-        end
+        if i["_id"] != Variable.v_despacho
+          if diccionario_sku.key?(i["_id"])
+            diccionario_sku[i["_id"]] += i["total"]
+          else
+            diccionario_sku[i["_id"]] = i["total"]
+          end
+        end      
       end
     end
+
     diccionario_sku.each do |k, v|
       stock = {}
       stock["sku"] = k

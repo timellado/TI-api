@@ -34,31 +34,36 @@ module Bodega
             :headers =>{'Content-Type' => 'application/json',
             'Authorization'=> 'INTEGRACION grupo10:'+sha1})
             results = response.parsed_response
+            return results
             #puts results
          end
 #MOVER (Probar)
          #Mover Producto a otra bodega (despacho a otro grupo)
          def self.Mover_bodega(almacenid, productid)
-            sha1 = get_sha1('POST'+productid+almacenid)
+            sha1 = Sha1.get_sha1('POST'+productid+almacenid)
             response = HTTParty.post($uri+'moveStockBodega',
             :headers =>{'Content-Type' => 'application/json',
-            'Authorization'=> 'INTEGRACION grupo10:'+sha1})
+            'Authorization'=> 'INTEGRACION grupo10:'+sha1},
+            :body => {'productoId'=>productid, 'almacenId'=> almacenid,'precio'=> "1"}.to_json)
             results = response.parsed_response
             #puts results
          end
 
          #Mover Producto a otro almacen propio
          def self.Mover_almacen(almacenid, productid)
-            sha1 = get_sha1('POST'+productid+almacenid)
+            sha1 = Sha1.get_sha1('POST'+productid+almacenid)
+            #puts sha1
             response = HTTParty.post($uri+'moveStock',
-            :headers =>{'Content-Type' => 'application/json',
-            'Authorization'=> 'INTEGRACION grupo10:'+sha1})
+            :headers =>{'Content-Type' => 'application/json', 
+            'Authorization'=> 'INTEGRACION grupo10:'+sha1},
+            :body => {'productoId'=> productid, 'almacenId'=> almacenid}.to_json)
             results = response.parsed_response
+            return results
             #puts results
          end
 #Fabricar(Probar)
         def self.Fabricar_gratis(sku, cantidad)
-            sha1 = get_sha1('PUT'+sku+cantidad)
+            sha1 = Sha1.get_sha1('PUT'+sku+cantidad)
          #   puts sha1
             response = HTTParty.put($uri+'fabrica/fabricarSinPago',
             :headers =>{'Content-Type' => 'application/json',
@@ -75,7 +80,7 @@ module Bodega
           if grupo != 10
             almacen_recep = "5cbd3ce444f67600049431e9"
             url = 'tuerca'+grupo+'@ing.puc.cl/'
-            sha1 = get_sha1('PUT'+sku+cantidad)
+            sha1 = Sha1.get_sha1('PUT'+sku+cantidad)
             response = HTTParty.post($uri+'orders',
             :headers =>{'Content-Type' => 'application/json'},
             :body =>{
