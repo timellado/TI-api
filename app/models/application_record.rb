@@ -120,17 +120,21 @@ class ApplicationRecord < ActiveRecord::Base
           end
         end
         if movidos
-          quantity = ((cantidad / producto.lote_produccion).ceil * producto.lote_produccion).to_i
+          quantity = ((cantidad.to_f / producto.lote_produccion.to_f).ceil * producto.lote_produccion).to_i
           #puts "Fabricar1"
           Bodega.Fabricar_gratis(sku, quantity)
           
         end
       else
-        quantity = ((cantidad / producto.lote_produccion).ceil * producto.lote_produccion).to_i
+      
+
+        quantity = ((cantidad.to_f / producto.lote_produccion.to_f).ceil * producto.lote_produccion).to_i
         #puts "Fabricar2"
         #puts producto.lote_produccion
         #puts quantity
+        if sku == "1001" || sku == "1004" || sku == "1011" || sku == "1013" || sku == "1016"  
         Bodega.Fabricar_gratis(sku, quantity)
+        end
       end
     end
   end

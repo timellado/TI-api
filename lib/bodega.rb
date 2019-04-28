@@ -71,8 +71,8 @@ module Bodega
             :body => {'sku' => sku, 'cantidad' => cantidad}.to_json)
             results = response.parsed_response
             #puts cantidad
-            #puts sku
-            #puts results
+          
+            puts results
             return results
 
         end
@@ -101,7 +101,6 @@ module Bodega
                         return results
                 
                 else
-                        
                         return 
                 end
                 

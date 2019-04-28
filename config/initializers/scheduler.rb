@@ -2,7 +2,7 @@ require 'rufus-scheduler'
 
 scheduler = Rufus::Scheduler.new
 
-scheduler.every '20s' do
+scheduler.every '2h' do
   ApplicationRecord.keep_minimum_stock
 end
 
