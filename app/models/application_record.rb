@@ -18,6 +18,9 @@ class ApplicationRecord < ActiveRecord::Base
       minimo = mins[1].to_f
       if stock.key?(sku_a_pedir)
         minimo -= stock[sku_a_pedir]
+        if minimo <0
+          minimo=0
+        end
       end
       minimo = (minimo * 1.3).to_f
       producto = Product.find_by_sku(sku_a_pedir)
@@ -63,7 +66,10 @@ class ApplicationRecord < ActiveRecord::Base
     #puts stock_a_pedir
     #self.pedir_producto("1003",63)
     stock_a_pedir.each do |sku, cantidad|
-      self.pedir_producto(sku, cantidad)
+      if cantidad > 0
+        self.pedir_producto(sku, cantidad)
+      end
+      
     end
   end
 
@@ -87,8 +93,7 @@ class ApplicationRecord < ActiveRecord::Base
         if ped["aceptado"]
           futuro_envio = true
         end
-    end
-    
+      end
     end
     if !futuro_envio
       #Pedir en bodega
@@ -123,6 +128,8 @@ class ApplicationRecord < ActiveRecord::Base
       else
         quantity = ((cantidad / producto.lote_produccion).ceil * producto.lote_produccion).to_i
         #puts "Fabricar2"
+        #puts producto.lote_produccion
+        #puts quantity
         Bodega.Fabricar_gratis(sku, quantity)
       end
     end
