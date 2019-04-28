@@ -63,33 +63,54 @@ module Bodega
          end
 #Fabricar(Probar)
         def self.Fabricar_gratis(sku, cantidad)
-            sha1 = Sha1.get_sha1('PUT'+sku+cantidad)
+            sha1 = Sha1.get_sha1('PUT'+sku+cantidad.to_s)
          #   puts sha1
             response = HTTParty.put($uri+'fabrica/fabricarSinPago',
             :headers =>{'Content-Type' => 'application/json',
             'Authorization'=> 'INTEGRACION grupo10:'+sha1},
             :body => {'sku' => sku, 'cantidad' => cantidad}.to_json)
             results = response.parsed_response
-         #   puts results
+            #puts cantidad
+            #puts sku
+            #puts results
             return results
 
         end
 
 #Pedir a otro grupo(Probar)
         def self.Pedir(sku, cantidad, grupo)
+        #puts grupo
           if grupo != 10
-            almacen_recep = "5cbd3ce444f67600049431e9"
-            url = 'tuerca'+grupo+'@ing.puc.cl/'
-            sha1 = Sha1.get_sha1('PUT'+sku+cantidad)
-            response = HTTParty.post($uri+'orders',
-            :headers =>{'Content-Type' => 'application/json'},
-            :body =>{
-                :sku => sku,
-                :cantidad => cantidad,
-                :almacenId =>almacenid
-            })
-            results = response.parsed_response
-            return results
+            almacenid = "5cbd3ce444f67600049431e9"
+            url = 'http://tuerca'+grupo.to_s+'.ing.puc.cl/'
+            
+            begin
+                response = HTTParty.post(url+'orders',
+                        :headers =>{'Content-Type' => 'application/json'},
+                        :body =>{
+                            'sku' => sku,
+                            'cantidad' => cantidad,
+                            'almacenId' =>almacenid
+                        })
+                status = response.code
+                #puts status
+                if status == 200
+                        results = response.parsed_response  
+                       #puts "respondio"  
+                        #puts results
+                        return results
+                
+                else
+                        
+                        return 
+                end
+                
+            rescue 
+                
+                return 
+                    
+            end
+            
             #puts results
           end
         end

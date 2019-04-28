@@ -60,6 +60,8 @@ class ApplicationRecord < ActiveRecord::Base
         end
       end
     end
+    #puts stock_a_pedir
+    #self.pedir_producto("1003",63)
     stock_a_pedir.each do |sku, cantidad|
       self.pedir_producto(sku, cantidad)
     end
@@ -74,16 +76,25 @@ class ApplicationRecord < ActiveRecord::Base
     pedidos = []
     groups_id.each do |g|
       pedido = JSON.parse(Bodega.Pedir(sku, cantidad, g).to_json)
-      pedidos.push(pedido)
-    end
-    pedidos.each do |ped|
-      if ped["aceptado"]
-        futuro_envio = true
+     
+      if pedido
+        #puts pedido
+        pedidos.push(pedido)
       end
+    end
+    if pedidos.length >0
+      pedidos.each do |ped|
+        if ped["aceptado"]
+          futuro_envio = true
+        end
+    end
+    
     end
     if !futuro_envio
       #Pedir en bodega
+      #puts "bodega"
       if sku > "1016"
+        
         ingredientes = producto.ingredients
         factor = (cantidad / producto.lote_produccion).ceil
         schedule = false
@@ -92,6 +103,7 @@ class ApplicationRecord < ActiveRecord::Base
           q_ingredient = ((i.cantidad_para_lote * factor) / i.lote_produccion).ceil * i.lote_produccion
           if Logica.sku_disponible(sku, q_ingredient)
               Logica.mover_productos_a_despacho(sku, q_ingredient)
+              #puts "Mover a despacho"
           elsif !schedule
             movidos = false
             minutos = Product.find_by_sku(i.sku.to_s).tiempo_produccion
@@ -104,10 +116,13 @@ class ApplicationRecord < ActiveRecord::Base
         end
         if movidos
           quantity = ((cantidad / producto.lote_produccion).ceil * producto.lote_produccion).to_i
+          #puts "Fabricar1"
           Bodega.Fabricar_gratis(sku, quantity)
+          
         end
       else
         quantity = ((cantidad / producto.lote_produccion).ceil * producto.lote_produccion).to_i
+        #puts "Fabricar2"
         Bodega.Fabricar_gratis(sku, quantity)
       end
     end
