@@ -3,4 +3,5 @@ Rails.application.routes.draw do
 
   post '/orders' => 'api#create_order'
   get '/inventories' => 'api#index'
+  root 'roots#index'
 end
