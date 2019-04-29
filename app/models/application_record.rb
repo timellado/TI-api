@@ -11,15 +11,20 @@ class ApplicationRecord < ActiveRecord::Base
   def self.keep_minimum_stock
     minimum_stock_list = StockMinimo.get_minimum_stock
     current_products = Inventory.get_inventory
-    stock = current_products[0]
+    #puts minimum_stock_list
+    #puts current_products
+    stock = current_products
     stock_a_pedir = {}
+
     minimum_stock_list.each do |mins|
       sku_a_pedir = mins[0].to_s
       minimo = mins[1].to_f
-      if stock.key?(sku_a_pedir)
-        minimo -= stock[sku_a_pedir]
-        if minimo <0
-          minimo=0
+      stock.each do |d|
+        if d['sku'] == sku_a_pedir
+          minimo -= d['total']
+          if minimo <0
+            minimo=0
+          end
         end
       end
       minimo = (minimo * 1.3).to_f
