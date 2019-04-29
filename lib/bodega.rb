@@ -81,6 +81,7 @@ module Bodega
         def self.Pedir(sku, cantidad, grupo)
         #puts grupo
           if grupo != 10
+            #cambiar en produccion
             almacenid = "5cbd3ce444f67600049431e9"
             url = 'http://tuerca'+grupo.to_s+'.ing.puc.cl/'
             
