@@ -21,25 +21,26 @@ include Variable
     ## finalmente render Json retorna un json con los datos esperados
     lista_stock = Inventory.get_inventory
     render json: lista_stock.to_json
+
     ##results = JSON.parse(Fabricar_gratis('1016','80').to_json)
     ##render json: results
     ##results2 = JSON.parse(all_almacenes().to_json)
     ##puts results2
-
+    
+    rescue ActiveRecord::RecordNotFound => e
+      render json: {
+        error: e.to_s
+      }, status: :service_unavailable
+    
 
     #results.each do |i|
     #  puts i["_id"]
     #end
   end
 
-
-
   def create_order
     #se crea la orden
     @order = Order.new(order_params)
-
-
-
   ##
     ##logic = Logica.listar_sku_id("1001")
     ##puts logic
@@ -76,6 +77,12 @@ include Variable
       render status: 200, json: {
         sku: 'hola'}
     end
+
+    rescue ActiveRecord::RecordNotFound => e
+    render json: {
+      error: e.to_s
+    }, status: :service_unavailable
+
   end
 
   def order_params
