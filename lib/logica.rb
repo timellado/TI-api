@@ -143,6 +143,7 @@ include Variable
                 break
               end
               Bodega.Mover_almacen(Variable.v_despacho,lista_sku_recepcion[i][0])
+              Bodega.Mover_bodega(almacen_destino,lista_sku_recepcion[i][0])
               cont = cont + 1
             end
 
@@ -151,6 +152,7 @@ include Variable
               break
             end
               Bodega.Mover_almacen(Variable.v_despacho,lista_sku_i1[i][0])
+              Bodega.Mover_bodega(almacen_destino,lista_sku_i1[i][0])
                 cont = cont + 1
           end
 
@@ -161,6 +163,7 @@ include Variable
             end
 
               Bodega.Mover_almacen(Variable.v_despacho,lista_sku_i2[i][0])
+              Bodega.Mover_bodega(almacen_destino,lista_sku_i2[i][0])
               cont = cont + 1
           end
 
