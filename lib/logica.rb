@@ -76,6 +76,7 @@ include Variable
         jsn.each do |j|
             lista_id.append [j["_id"],j["vencimiento"]]
         end
+        lista_id = lista_id.sort{ |a,b| a[1]<=> b[1]}
         return lista_id
     end
 
@@ -181,7 +182,7 @@ include Variable
             Bodega.Mover_almacen(Variable.v_despacho,product_id)
             Bodega.Mover_bodega(almacen_destino,product_id)
             cont = cont +1
-            
+
           end
         end
     end
