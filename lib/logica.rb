@@ -166,11 +166,12 @@ include Variable
 
           self.clean_reception
 
-          while cont != cantidad do
+          while cont < cantidad do
 
             (0..lista_sku_pulmon.length-1).each do |i|
+                  product = lista_sku_pulmon[i][0]
                    Bodega.Mover_almacen(Variable.v_recepcion,lista_sku_pulmon[i][0])
-                   Bodega.Mover_almacen(Variable.v_despacho,lista_sku_pulmon[i][0])
+                   Bodega.Mover_almacen(Variable.v_despacho,product)
 
             cont = cont +1
               end
