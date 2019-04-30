@@ -62,7 +62,7 @@ include Variable
       render status: 400, json: {
         message: "Formato invalido"}
     end
-      Logica.mover_productos_a_despacho(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
+      Logica.mover_productos_a_despacho_y_despachar(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
 
       #Logica.despachar_a_grupo(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
 
@@ -89,7 +89,7 @@ include Variable
       render status: 400, json: {
         message: "Formato invalido"}
     end
-      Logica.mover_productos_a_despacho(@order[:Sku],@order[:Cantidad], @order[:Almacen_id])
+      Logica.mover_productos_a_despacho_y_despachar(@order[:Sku],@order[:Cantidad], @order[:Almacen_id])
 
 
 
