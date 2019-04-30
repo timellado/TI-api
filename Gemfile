@@ -60,3 +60,7 @@ gem 'openssl'
 
 gem "httparty"
 gem "rufus-scheduler"
+
+gem 'bootstrap'
+
+gem 'jquery-rails'
