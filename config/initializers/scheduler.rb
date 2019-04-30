@@ -1,9 +1,16 @@
 require 'rufus-scheduler'
+require 'logica'
+
+include Logica
 
 scheduler = Rufus::Scheduler.new
 
 scheduler.every '2h' do
   ApplicationRecord.keep_minimum_stock
+end
+
+scheduler.every '1h' do
+  Logica.clean_reception
 end
 
 # scheduler.every '5s' do
