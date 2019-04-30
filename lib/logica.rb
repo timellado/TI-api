@@ -45,6 +45,8 @@ include Variable
       return false
     end
 
+  end
+
     def self.listar_sku_id(sku)
         lista_id = []
         ## Revisar almacenes
@@ -100,6 +102,7 @@ include Variable
 
           end
         end
+
         if vaciar
           #todos los sku del alamcen de recepcion
           skus = Bodega.get_skus_almacen(recepcion_id)
@@ -135,45 +138,45 @@ include Variable
 
         cont = 0
 
-        (0..lista_sku_recepcion.length-1).each{
+        (0..lista_sku_recepcion.length-1).each do |i|
               if cont >= cantidad
                 break
               end
-              |i| Bodega.Mover_almacen(Variable.v_despacho,lista_sku_recepcion[i][0])
+              Bodega.Mover_almacen(Variable.v_despacho,lista_sku_recepcion[i][0])
               cont = cont + 1
-            }
+            end
 
-          (0..lista_sku_i1.length-1).each{
+          (0..lista_sku_i1.length-1).each do |i|
             if cont >= cantidad
               break
             end
-              |i| Bodega.Mover_almacen(Variable.v_despacho,lista_sku_i1[i][0])
+              Bodega.Mover_almacen(Variable.v_despacho,lista_sku_i1[i][0])
                 cont = cont + 1
-                }
+          end
 
-          (0..lista_sku_i2.length-1).each{
+          (0..lista_sku_i2.length-1).each do |i|
 
             if cont >= cantidad
               break
             end
 
-              |i| Bodega.Mover_almacen(Variable.v_despacho,lista_sku_i2[i][0])
+              Bodega.Mover_almacen(Variable.v_despacho,lista_sku_i2[i][0])
               cont = cont + 1
-          }
+          end
 
           self.clean_reception
 
           while cont != cantidad do
 
-            (0..lista_sku_pulmon.length-1).each{
-                  |i| Bodega.Mover_almacen(Variable.v_recepcion,lista_sku_pulmon[i][0])
-                  |i| Bodega.Mover_almacen(Variable.v_despacho,lista_sku_pulmon[i][0])
-                }
-            cont = cont +1
+            (0..lista_sku_pulmon.length-1).each do |i|
+                   Bodega.Mover_almacen(Variable.v_recepcion,lista_sku_pulmon[i][0])
+                   Bodega.Mover_almacen(Variable.v_despacho,lista_sku_pulmon[i][0])
 
+            cont = cont +1
+              end
           end
 
-    end
+     end
 
     def self.despachar_a_grupo(sku,cantidad,almacen_destino)
         lista_id = listar_sku_id_despacho(sku)
@@ -197,17 +200,19 @@ include Variable
       if self.validar_productores_materia_prima == true
         lista_sku = Inventory.get_inventory()
         stock = 0
-        lista_sku.each do |js|
-            if js["sku"] == sku
+          lista_sku.each do |js|
+              if js["sku"] == sku
                     stock = js["total"]
-            end
-        end
+              end
+          end
 
-        diff = stock - cantidad
-        if diff < (1/3*stock)
-          return false
-        end
+            diff = stock - cantidad
+          if diff < (1/3*stock)
+            return false
+          end
 
         return true
     end
+end
+
 end
