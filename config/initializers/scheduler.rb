@@ -20,7 +20,7 @@ end
 #     p i
 #     Logica.sacar_de_despacho(i[0], 200)
 
-scheduler.every '1h' do
+scheduler.every '1h':first_in => 2 do
   Logica.clean_reception
 end
 
