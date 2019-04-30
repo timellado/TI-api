@@ -5,7 +5,7 @@ include Logica
 
 scheduler = Rufus::Scheduler.new
 
-scheduler.every '2h' do
+scheduler.every '2h', :first_in => 2 do
   ApplicationRecord.keep_minimum_stock
 end
 
