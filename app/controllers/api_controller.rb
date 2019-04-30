@@ -26,12 +26,12 @@ include Variable
     ##render json: results
     ##results2 = JSON.parse(all_almacenes().to_json)
     ##puts results2
-    
+
     rescue ActiveRecord::RecordNotFound => e
       render json: {
         error: e.to_s
       }, status: :service_unavailable
-    
+
 
     #results.each do |i|
     #  puts i["_id"]
@@ -41,27 +41,34 @@ include Variable
   def create_order
     #se crea la orden
     @order = Order.new(order_params)
-  ##
-    ##logic = Logica.listar_sku_id("1001")
-    ##puts logic
 
+    ## caso en que tenemos excedente de stock
     if Logica.sku_disponible(@order[:Sku],@order[:Cantidad])
       Logica.mover_productos_a_despacho(@order[:Sku],@order[:Cantidad])
       @order.Aceptado = true
       Logica.despachar_a_grupo(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
       @order.Despachado = true
-    ## agregar una función de enviar pedido
-    else 
-    ##   render status: 200, json: {
-    ##     sku: @order[:Sku],
-    ##     cantidad: @order[:Cantidad],
-    ##     almacenId: @order[:Almacen_id],
-    ##     aceptado: false,
-    ##     despachado: false,
-    ##     precio: @order[:Precio]
-    ##   }.to_json
+
+
+    ## caso en que tenemos materia prima para enviar
+    elsif Logica.validar_envio_materia_prima(@order[:Sku], @order[:Cantidad])
+      Logica.mover_productos_a_despacho(@order[:Sku],@order[:Cantidad])
+      @order.Aceptado = true
+      Logica.despachar_a_grupo(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
+      @order.Despachado = true
+
+
+    else
+    render status: 200, json: {
+        sku: @order[:Sku],
+         cantidad: @order[:Cantidad],
+         almacenId: @order[:Almacen_id],
+         aceptado: false,
+         despachado: false,
+         precio: @order[:Precio]
+       }.to_json
     end
-    
+
     #si se crea bien, se responde
     if @order.save
       render status: 200, json: {
@@ -74,8 +81,8 @@ include Variable
         precio: @order[:Precio]
       }.to_json
     else
-      render status: 200, json: {
-        sku: 'hola'}
+      render status: 400, json: {
+        message: "Formato invalido"}
     end
 
     rescue ActiveRecord::RecordNotFound => e

@@ -74,7 +74,7 @@ class ApplicationRecord < ActiveRecord::Base
       if cantidad > 0
         self.pedir_producto(sku, cantidad)
       end
-      
+
     end
   end
 
@@ -87,7 +87,7 @@ class ApplicationRecord < ActiveRecord::Base
     pedidos = []
     groups_id.each do |g|
       pedido = JSON.parse(Bodega.Pedir(sku, cantidad, g).to_json)
-     
+
       if pedido
         #puts pedido
         pedidos.push(pedido)
@@ -104,7 +104,7 @@ class ApplicationRecord < ActiveRecord::Base
       #Pedir en bodega
       #puts "bodega"
       if sku > "1016"
-        
+
         ingredientes = producto.ingredients
         factor = (cantidad / producto.lote_produccion).ceil
         schedule = false
@@ -128,16 +128,16 @@ class ApplicationRecord < ActiveRecord::Base
           quantity = ((cantidad.to_f / producto.lote_produccion.to_f).ceil * producto.lote_produccion).to_i
           #puts "Fabricar1"
           Bodega.Fabricar_gratis(sku, quantity)
-          
+
         end
       else
-      
+
 
         quantity = ((cantidad.to_f / producto.lote_produccion.to_f).ceil * producto.lote_produccion).to_i
         #puts "Fabricar2"
         #puts producto.lote_produccion
         #puts quantity
-        if sku == "1001" || sku == "1004" || sku == "1011" || sku == "1013" || sku == "1016"  
+        if sku == "1001" || sku == "1004" || sku == "1011" || sku == "1013" || sku == "1016"
         Bodega.Fabricar_gratis(sku, quantity)
         end
       end

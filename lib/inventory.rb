@@ -28,7 +28,7 @@ module Inventory
           else
             diccionario_sku[i["_id"]] = i["total"]
           end
-        end      
+        end
       end
     end
 
@@ -41,4 +41,7 @@ module Inventory
     end
     return lista_stock
   end
+
+
+
 end
