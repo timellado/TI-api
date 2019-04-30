@@ -43,65 +43,65 @@ include Variable
     @order = Order.new(order_params)
 
     ## caso en que tenemos excedente de stock
-    if Logica.sku_disponible(@order[:Sku],@order[:Cantidad])
-        @order.Aceptado = true
-          @order.Despachado = true
+    if Logica.sku_disponible(@order[:sku],@order[:cantidad])
+        @order.aceptado = true
+          @order.despachado = true
 
       if @order.save
         render status: 200, json: {
-          sku: @order[:Sku],
-          cantidad: @order[:Cantidad],
-          almacenId: @order[:Almacen_id],
-          aceptado: @order[:Aceptado],
+          sku: @order[:sku],
+          cantidad: @order[:cantidad],
+          almacenId: @order[:almacen_id],
+          aceptado: @order[:aceptado],
           ## revisar despachado
-          despachado: @order[:Despachado],
-          precio: @order[:Precio]
+          despachado: @order[:despachado],
+          precio: @order[:precio]
         }.to_json
 
     else
       render status: 400, json: {
         message: "Formato invalido"}
     end
-      Logica.mover_productos_a_despacho_y_despachar(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
+      Logica.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad],@order[:almacenId])
 
       #Logica.despachar_a_grupo(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
 
 
     ## caso en que tenemos materia prima para enviar
-    elsif Logica.validar_envio_materia_prima(@order[:Sku], @order[:Cantidad])
+    elsif Logica.validar_envio_materia_prima(@order[:sku], @order[:cantidad])
 
-      @order.Aceptado = true
+      @order.aceptado = true
       #Logica.despachar_a_grupo(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
-      @order.Despachado = true
+      @order.despachado = true
 
       if @order.save
         render status: 200, json: {
-          sku: @order[:Sku],
-          cantidad: @order[:Cantidad],
-          almacenId: @order[:Almacen_id],
-          aceptado: @order[:Aceptado],
+          sku: @order[:sku],
+          cantidad: @order[:cantidad],
+          almacenId: @order[:almacenId],
+          aceptado: @order[:aceptado],
           ## revisar despachado
-          despachado: @order[:Despachado],
-          precio: @order[:Precio]
+          despachado: @order[:despachado],
+          precio: @order[:precio]
         }.to_json
 
     else
       render status: 400, json: {
         message: "Formato invalido"}
     end
-      Logica.mover_productos_a_despacho_y_despachar(@order[:Sku],@order[:Cantidad], @order[:Almacen_id])
+      Logica.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad], @order[:almacenId])
 
 
 
     else
 
     render status: 200, json: {
-        sku: @order[:Sku],
-         cantidad: @order[:Cantidad],
-         almacenId: @order[:Almacen_id],
+        sku: @order[:sku],
+         cantidad: @order[:cantidad],
+         almacenId: @order[:almacenId],
          aceptado: false,
          despachado: false,
-         precio: @order[:Precio]
+         precio: @order[:precio]
        }.to_json
     end
 
@@ -115,7 +115,7 @@ include Variable
   end
 
   def order_params
-    defaults = { Aceptado: false, Despachado: false}
-    params.permit(:Sku, :Cantidad, :Almacen_id, :Aceptado, :Despachado, :Precio).reverse_merge(defaults)
+    defaults = { aceptado: false, despachado: false, precio: 1}
+    params.permit(:sku, :cantidad, :almacenId, :aceptado, :despachado, :precio).reverse_merge(defaults)
   end
 end
