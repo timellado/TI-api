@@ -94,7 +94,7 @@ class ApplicationRecord < ActiveRecord::Base
     producto = Product.find_by_sku(sku)
     #Pedir a otros grupos
     groups = producto.groups
-    groups_id = groups.map{|m| m.id()}
+    #groups_id = groups.map{|m| m.id()}
     puts '------------------------revisar groups start--------------------------------------'
     puts groups
     puts '------------------------revisar groups fin--------------------------------------'
@@ -106,58 +106,67 @@ class ApplicationRecord < ActiveRecord::Base
     futuro_envio = false
     pedidos = []
     #p "Pedir a grupos"
-    groups_id.each do |g|
-      #p ("SKU :", sku)
-      #p ("Q :", cantidad)
-      #p ("Grupo :", g)
-      #p "*" * 10
-      pedido = JSON.parse(Bodega.Pedir(sku.to_s, cantidad.to_s, g.to_s).to_json)
-    
-      ## está raro esta forma de analisar siesque se aceptó el pedido o no (no deberia ser con codes?)
-      if pedido.nil? == false
-        #puts pedido
-        pedidos.push(pedido)
-      end
+    if groups.nil?
+      groups = [1,2,3,4,5,6,7,8,9,11,12,13,14]
     end
-    if pedidos.length >0
-      pedidos.each do |ped|
-        if ped["aceptado"] == true
-          futuro_envio = true
+
+      groups.each do |g|
+        #p ("SKU :", sku)
+        #p ("Q :", cantidad)
+        #p ("Grupo :", g)
+        #p "*" * 10
+        pedido = JSON.parse(Bodega.Pedir(sku.to_s, cantidad.to_s, g.grupo.to_s).to_json)
+      
+        ## está raro esta forma de analisar siesque se aceptó el pedido o no (no deberia ser con codes?)
+        if pedido.nil? == false
+          #puts pedido
+          pedidos.push(pedido)
         end
       end
-    end
-    if futuro_envio == false
-      #Pedir en bodega
-      #puts "bodega"
-      if sku > "1016"
-        ingredientes = producto.ingredients
-        factor = (cantidad / producto.lote_produccion).ceil
-        schedule = false
-        movidos = true
-        total_ingredientes = ingredientes.count
-        ingredientes_en_despacho = []
-        ingredientes.each do |i|
-          q_ingredient = (((i.cantidad_para_lote * factor) / i.lote_produccion).ceil * i.lote_produccion).to_i
-          #p "Moviendo a despacho: ", i.sku
-          if Logica.mover_a_despacho_para_minimo(i.sku, q_ingredient)
-            ingredientes_en_despacho.push([i.sku, q_ingredient])
+      if pedidos.length >0
+        pedidos.each do |ped|
+          if ped["aceptado"] == true
+            futuro_envio = true
           end
         end
-        if ingredientes_en_despacho.count == total_ingredientes
-          #p "Fabricar producto: ", sku
-          Bodega.Fabricar_gratis(sku, cantidad)
+      end
+      if futuro_envio == false
+        #Pedir en bodega
+        #puts "bodega"
+        if sku > "1016"
+          ingredientes = producto.ingredients
+          factor = (cantidad / producto.lote_produccion).ceil
+          schedule = false
+          movidos = true
+          total_ingredientes = ingredientes.count
+          ingredientes_en_despacho = []
+          ingredientes.each do |i|
+            q_ingredient = (((i.cantidad_para_lote * factor) / i.lote_produccion).ceil * i.lote_produccion).to_i
+            #p "Moviendo a despacho: ", i.sku
+            if Logica.mover_a_despacho_para_minimo(i.sku, q_ingredient)
+              ingredientes_en_despacho.push([i.sku, q_ingredient])
+            end
+          end
+          if ingredientes_en_despacho.count == total_ingredientes
+            #p "Fabricar producto: ", sku
+            Bodega.Fabricar_gratis(sku, cantidad)
+          else
+            ingredientes_en_despacho.each do |i|
+              #p "Sacar de despacho producto: ", i[0]
+              Logica.sacar_de_despacho(i[0], i[1])
+            end
+          end
         else
-          ingredientes_en_despacho.each do |i|
-            #p "Sacar de despacho producto: ", i[0]
-            Logica.sacar_de_despacho(i[0], i[1])
+          if sku == "1001" || sku == "1004" || sku == "1011" || sku == "1013" || sku == "1016"
+            #p "Fabricar materia prima: ", sku
+            Bodega.Fabricar_gratis(sku, cantidad)
           end
         end
-      else
-        if sku == "1001" || sku == "1004" || sku == "1011" || sku == "1013" || sku == "1016"
-          #p "Fabricar materia prima: ", sku
-          Bodega.Fabricar_gratis(sku, cantidad)
-        end
       end
-    end
+    
+  end
+
+  def self.clean
+    Logica.clean_reception
   end
 end

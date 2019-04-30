@@ -21,7 +21,7 @@ end
 #     Logica.sacar_de_despacho(i[0], 200)
 
 scheduler.every '1h', :first_in => 2 do
-  Logica.clean_reception
+  ApplicationRecord.clean
 end
 
 #   end
