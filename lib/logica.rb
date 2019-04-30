@@ -188,7 +188,7 @@ include Variable
 
 
     def self.validar_productores_materia_prima(sku)
-      Group_find_by_grupo(10).products.each do |product|
+      Group.find_by_grupo(10).products.each do |product|
         if sku == product.sku
           return true
         end
