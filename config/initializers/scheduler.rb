@@ -6,7 +6,7 @@ require 'rufus-scheduler'
 
 
 
-scheduler = Rufus::Scheduler.start_new
+scheduler = Rufus::Scheduler.new
 job = scheduler.every '1s' do
 puts "hello world"
 end
