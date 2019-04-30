@@ -1,8 +1,8 @@
 class Order < ApplicationRecord
-    validates :Sku ,presence: true
-    validates :Cantidad ,presence: true
-    validates :Almacen_id ,presence: true
-    validates :Aceptado, presence: true
-    validates :Despachado, presence: true
-    validates :Precio, presence: true
+    validates :sku ,presence: true
+    validates :cantidad ,presence: true
+    validates :almacenId ,presence: true
+    validates :aceptado, presence: true
+    validates :despachado, presence: true
+    validates :precio, presence: true
 end
