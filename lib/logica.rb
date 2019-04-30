@@ -196,7 +196,7 @@ include Variable
       return false
     end
 
-    def self.validar_envio_materia_prima(sku,cantidad,almacen_id)
+    def self.validar_envio_materia_prima(sku,cantidad)
       if self.validar_productores_materia_prima == true
         lista_sku = Inventory.get_inventory()
         stock = 0
