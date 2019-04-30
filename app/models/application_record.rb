@@ -96,11 +96,11 @@ class ApplicationRecord < ActiveRecord::Base
     groups = producto.groups
     #groups_id = groups.map{|m| m.id()}
     puts '------------------------revisar groups start--------------------------------------'
-    puts groups
+    #puts groups
     puts '------------------------revisar groups fin--------------------------------------'
   
     puts '------------------------revisar groups_id start--------------------------------------'
-    puts groups_id
+    #puts groups_id
     puts '------------------------revisar groups_id fin--------------------------------------'
   
     futuro_envio = false
