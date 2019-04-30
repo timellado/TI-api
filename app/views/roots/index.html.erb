@@ -1,0 +1,40 @@
+ 
+ 
+ <h1>Resumen Almacenes</h1>
+
+ <table class="table">
+ <thead>
+ <tr>
+    <th scope="col">Almacén</th>
+
+    <th scope="col">Capacidad</th>
+
+    <th scope="col">Espacio Ocupado</th>
+
+    <th scope="col">Espacio Libre</th>
+  </tr>
+</thead>
+<tbody>
+  <%@results_root.each do |item|%>
+   <tr>
+    <td><%if item["_id"] == @recepcion%>
+        Recepcion
+        <%elsif item["_id"] == @cocina%>
+        Cocina
+        <%elsif item["_id"] == @despacho%>
+        Despacho
+        <%elsif item["_id"] == @pulmon%>
+        Pulmón
+        <%elsif item["_id"] == @inventario1%>
+        Inventario 1
+        <%elsif item["_id"] == @inventario2%>
+        Inventario 2
+        <%end%>
+        </td>
+    <td><%=item["totalSpace"]%></td>
+    <td><%=item["usedSpace"]%></td>
+    <td><%=item["totalSpace"].to_i - item["usedSpace"].to_i%></td>
+    </tr>
+    <%end%>
+  </tbody>
+ </table>
