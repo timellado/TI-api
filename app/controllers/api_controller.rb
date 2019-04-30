@@ -22,96 +22,80 @@ include Variable
     lista_stock = Inventory.get_inventory
     render json: lista_stock.to_json
 
-    ##results = JSON.parse(Fabricar_gratis('1016','80').to_json)
-    ##render json: results
-    ##results2 = JSON.parse(all_almacenes().to_json)
-    ##puts results2
-
-    rescue ActiveRecord::RecordNotFound => e
-      render json: {
-        error: e.to_s
-      }, status: :service_unavailable
-
-
-    #results.each do |i|
-    #  puts i["_id"]
-    #end
   end
 
   def create_order
     #se crea la orden
-    @order = Order.new(order_params)
-
-    ## caso en que tenemos excedente de stock
-    if Logica.sku_disponible(@order[:sku],@order[:cantidad])
-        @order.aceptado = true
-          @order.despachado = true
-
-      if @order.save
-        render status: 200, json: {
-          sku: @order[:sku],
-          cantidad: @order[:cantidad],
-          almacenId: @order[:almacen_id],
-          aceptado: @order[:aceptado],
-          ## revisar despachado
-          despachado: @order[:despachado],
-          precio: @order[:precio]
-        }.to_json
-
+    header = request.headers["grupo"]
+    if header.nil?
+      render json: {status: "error", code: 400, message: "Empty Header"}
+    
     else
-      render status: 400, json: {
-        message: "Formato invalido"}
-    end
-      Logica.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad],@order[:almacenId])
+      @order = Order.new(order_params)
 
-      #Logica.despachar_a_grupo(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
+      ## caso en que tenemos excedente de stock
+      if Logica.sku_disponible(@order[:sku],@order[:cantidad])
+          @order.aceptado = true
+            @order.despachado = true
+
+        if @order.save
+          render status: 200, json: {
+            sku: @order[:sku],
+            cantidad: @order[:cantidad],
+            almacenId: @order[:almacen_id],
+            aceptado: @order[:aceptado],
+            ## revisar despachado
+            despachado: @order[:despachado],
+            precio: @order[:precio]
+          }.to_json
+
+      else
+        render status: 400, json: {
+          message: "Formato invalido"}
+      end
+        Logica.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad],@order[:almacenId])
+
+        #Logica.despachar_a_grupo(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
 
 
-    ## caso en que tenemos materia prima para enviar
-    elsif Logica.validar_envio_materia_prima(@order[:sku], @order[:cantidad])
+      ## caso en que tenemos materia prima para enviar
+      elsif Logica.validar_envio_materia_prima(@order[:sku], @order[:cantidad])
 
-      @order.aceptado = true
-      #Logica.despachar_a_grupo(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
-      @order.despachado = true
+        @order.aceptado = true
+        #Logica.despachar_a_grupo(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
+        @order.despachado = true
 
-      if @order.save
+        if @order.save
+          render status: 200, json: {
+            sku: @order[:sku],
+            cantidad: @order[:cantidad],
+            almacenId: @order[:almacenId],
+            aceptado: @order[:aceptado],
+            ## revisar despachado
+            despachado: @order[:despachado],
+            precio: @order[:precio]
+          }.to_json
+
+        else
+          render status: 400, json: {
+            message: "Formato invalido"}
+        end
+          Logica.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad], @order[:almacenId])
+     
+      else
         render status: 200, json: {
           sku: @order[:sku],
           cantidad: @order[:cantidad],
           almacenId: @order[:almacenId],
-          aceptado: @order[:aceptado],
-          ## revisar despachado
-          despachado: @order[:despachado],
+          aceptado: false,
+          despachado: false,
           precio: @order[:precio]
         }.to_json
+      end
 
-    else
-      render status: 400, json: {
-        message: "Formato invalido"}
+      #si se crea bien, se responde
+
     end
-      Logica.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad], @order[:almacenId])
-
-
-
-    else
-
-    render status: 200, json: {
-        sku: @order[:sku],
-         cantidad: @order[:cantidad],
-         almacenId: @order[:almacenId],
-         aceptado: false,
-         despachado: false,
-         precio: @order[:precio]
-       }.to_json
-    end
-
-    #si se crea bien, se responde
-
-    rescue ActiveRecord::RecordNotFound => e
-    render json: {
-      error: e.to_s
-    }, status: :service_unavailable
-
   end
 
   def order_params
