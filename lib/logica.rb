@@ -130,7 +130,7 @@ include Variable
     end
 
 
-    def self.mover_productos_a_despacho(sku,cantidad)
+    def self.mover_productos_a_despacho(sku,cantidad,almacen_destino)
       lista_sku_recepcion = self.listar_no_vencidos(Variable.v_recepcion,sku)
       lista_sku_i1 = self.listar_no_vencidos(Variable.v_inventario1,sku)
       lista_sku_i2 = self.listar_no_vencidos(Variable.v_inventario2,sku)
@@ -169,9 +169,11 @@ include Variable
           while cont < cantidad do
 
             (0..lista_sku_pulmon.length-1).each do |i|
-                  product = lista_sku_pulmon[i][0]
+                  product_id = lista_sku_pulmon[i][0]
                    Bodega.Mover_almacen(Variable.v_recepcion,lista_sku_pulmon[i][0])
-                   Bodega.Mover_almacen(Variable.v_despacho,product)
+                   Bodega.Mover_almacen(Variable.v_despacho,product_id)
+                   Bodega.Mover_bodega(almacen_destino,product_id)
+
 
             cont = cont +1
               end

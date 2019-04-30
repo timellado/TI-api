@@ -44,21 +44,57 @@ include Variable
 
     ## caso en que tenemos excedente de stock
     if Logica.sku_disponible(@order[:Sku],@order[:Cantidad])
-      Logica.mover_productos_a_despacho(@order[:Sku],@order[:Cantidad])
-      @order.Aceptado = true
-      Logica.despachar_a_grupo(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
-      @order.Despachado = true
+        @order.Aceptado = true
+          @order.Despachado = true
+
+      if @order.save
+        render status: 200, json: {
+          sku: @order[:Sku],
+          cantidad: @order[:Cantidad],
+          almacenId: @order[:Almacen_id],
+          aceptado: @order[:Aceptado],
+          ## revisar despachado
+          despachado: @order[:Despachado],
+          precio: @order[:Precio]
+        }.to_json
+
+    else
+      render status: 400, json: {
+        message: "Formato invalido"}
+    end
+      Logica.mover_productos_a_despacho(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
+
+      #Logica.despachar_a_grupo(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
 
 
     ## caso en que tenemos materia prima para enviar
     elsif Logica.validar_envio_materia_prima(@order[:Sku], @order[:Cantidad])
-      Logica.mover_productos_a_despacho(@order[:Sku],@order[:Cantidad])
+
       @order.Aceptado = true
-      Logica.despachar_a_grupo(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
+      #Logica.despachar_a_grupo(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
       @order.Despachado = true
+
+      if @order.save
+        render status: 200, json: {
+          sku: @order[:Sku],
+          cantidad: @order[:Cantidad],
+          almacenId: @order[:Almacen_id],
+          aceptado: @order[:Aceptado],
+          ## revisar despachado
+          despachado: @order[:Despachado],
+          precio: @order[:Precio]
+        }.to_json
+
+    else
+      render status: 400, json: {
+        message: "Formato invalido"}
+    end
+      Logica.mover_productos_a_despacho(@order[:Sku],@order[:Cantidad], @order[:Almacen_id])
+
 
 
     else
+
     render status: 200, json: {
         sku: @order[:Sku],
          cantidad: @order[:Cantidad],
@@ -70,20 +106,6 @@ include Variable
     end
 
     #si se crea bien, se responde
-    if @order.save
-      render status: 200, json: {
-        sku: @order[:Sku],
-        cantidad: @order[:Cantidad],
-        almacenId: @order[:Almacen_id],
-        aceptado: @order[:Aceptado],
-        ## revisar despachado
-        despachado: @order[:Despachado],
-        precio: @order[:Precio]
-      }.to_json
-    else
-      render status: 400, json: {
-        message: "Formato invalido"}
-    end
 
     rescue ActiveRecord::RecordNotFound => e
     render json: {
