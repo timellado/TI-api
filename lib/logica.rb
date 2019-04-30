@@ -76,6 +76,7 @@ include Variable
         jsn.each do |j|
             lista_id.append [j["_id"],j["vencimiento"]]
         end
+        lista_id = lista_id.sort{ |a,b| a[1]<=> b[1]}
         return lista_id
     end
 
@@ -130,56 +131,61 @@ include Variable
     end
 
 
-    def self.mover_productos_a_despacho(sku,cantidad,almacen_destino)
-      lista_sku_recepcion = self.listar_no_vencidos(Variable.v_recepcion,sku)
-      lista_sku_i1 = self.listar_no_vencidos(Variable.v_inventario1,sku)
-      lista_sku_i2 = self.listar_no_vencidos(Variable.v_inventario2,sku)
-      lista_sku_pulmon = self.listar_no_vencidos(Variable.v_pulmon,sku)
+    def self.mover_productos_a_despacho_y_despachar(sku,cantidad,almacen_destino)
+      lista_id_sku_recepcion = self.listar_no_vencidos(Variable.v_recepcion,sku)
+      lista_id_sku_i1 = self.listar_no_vencidos(Variable.v_inventario1,sku)
+      lista_id_sku_i2 = self.listar_no_vencidos(Variable.v_inventario2,sku)
+      lista_id_sku_pulmon = self.listar_no_vencidos(Variable.v_pulmon,sku)
 
         cont = 0
 
-        (0..lista_sku_recepcion.length-1).each do |i|
-              if cont >= cantidad
-                break
-              end
-              Bodega.Mover_almacen(Variable.v_despacho,lista_sku_recepcion[i][0])
-              cont = cont + 1
-            end
-
-          (0..lista_sku_i1.length-1).each do |i|
-            if cont >= cantidad
-              break
-            end
-              Bodega.Mover_almacen(Variable.v_despacho,lista_sku_i1[i][0])
-                cont = cont + 1
-          end
-
-          (0..lista_sku_i2.length-1).each do |i|
-
+        (0..lista_id_sku_recepcion.length-1).each do |i|
             if cont >= cantidad
               break
             end
 
-              Bodega.Mover_almacen(Variable.v_despacho,lista_sku_i2[i][0])
-              cont = cont + 1
+            Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_recepcion[i][0])
+            Bodega.Mover_bodega(almacen_destino,lista_id_sku_recepcion[i][0])
+            cont = cont + 1
+
+        end
+
+        (0..lista_id_sku_i1.length-1).each do |i|
+          if cont >= cantidad
+            break
           end
 
-          self.clean_reception
+            Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_i1[i][0])
+            Bodega.Mover_bodega(almacen_destino,lista_id_sku_i1[i][0])
+            cont = cont + 1
 
-          while cont < cantidad do
+        end
 
-            (0..lista_sku_pulmon.length-1).each do |i|
-                  product_id = lista_sku_pulmon[i][0]
-                   Bodega.Mover_almacen(Variable.v_recepcion,lista_sku_pulmon[i][0])
-                   Bodega.Mover_almacen(Variable.v_despacho,product_id)
-                   Bodega.Mover_bodega(almacen_destino,product_id)
+        (0..lista_id_sku_i2.length-1).each do |i|
+          if cont >= cantidad
+            break
+          end
 
+            Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_i2[i][0])
+            Bodega.Mover_bodega(almacen_destino,lista_id_sku_i2[i][0])
+            cont = cont + 1
 
+        end
+
+        self.clean_reception
+
+        while cont < cantidad do
+
+          (0..lista_id_sku_pulmon.length-1).each do |i|
+            product_id = lista_id_sku_pulmon[i][0]
+            Bodega.Mover_almacen(Variable.v_recepcion,lista_id_sku_pulmon[i][0])
+            Bodega.Mover_almacen(Variable.v_despacho,product_id)
+            Bodega.Mover_bodega(almacen_destino,product_id)
             cont = cont +1
-              end
-          end
 
-     end
+          end
+        end
+    end
 
     def self.despachar_a_grupo(sku,cantidad,almacen_destino)
         lista_id = listar_sku_id_despacho(sku)

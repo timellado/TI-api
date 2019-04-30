@@ -112,7 +112,7 @@ class ApplicationRecord < ActiveRecord::Base
         ingredientes.each do |i|
           q_ingredient = ((i.cantidad_para_lote * factor) / i.lote_produccion).ceil * i.lote_produccion
           if Logica.sku_disponible(sku, q_ingredient)
-              Logica.mover_productos_a_despacho(sku, q_ingredient)
+              Logica.mover_productos_a_despacho_y_despachar(sku, q_ingredient)
               #puts "Mover a despacho"
           elsif !schedule
             movidos = false
