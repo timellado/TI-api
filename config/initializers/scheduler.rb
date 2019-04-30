@@ -10,6 +10,6 @@ scheduler = Rufus::Scheduler.new
 job = scheduler.every '1s' do
 puts "hello world"
 end
-scheduler.start
+scheduler.join
 #   end
 # end
