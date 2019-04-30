@@ -9,7 +9,9 @@ class ApplicationRecord < ActiveRecord::Base
   include Logica
 
   def self.keep_minimum_stock
+    ## entrega una lista de listas donde muestra el producto con su min stock
     minimum_stock_list = StockMinimo.get_minimum_stock
+    ## entrega una lista de lista donde muestra sku,nombre y cantidad
     stock = Inventory.get_inventory
     #puts minimum_stock_list
     #puts current_products
@@ -26,15 +28,19 @@ class ApplicationRecord < ActiveRecord::Base
           end
         end
       end
+      ## cachar bien cuanto queremos pedir
       minimo = (minimo * 1.3).to_f
+      ## -----------------------------------
       producto = Product.find_by_sku(sku_a_pedir)
       factor =  (minimo / producto.lote_produccion).ceil
+      ## cuanto debemos pedir nosotros para que nosotros estemos bien
       cantidad_a_pedir = producto.lote_produccion * factor
       if stock_a_pedir.key?(sku_a_pedir)
          stock_a_pedir[sku_a_pedir] += cantidad_a_pedir
       else
         stock_a_pedir[sku_a_pedir] = cantidad_a_pedir
       end
+      ## se agregan al diccionario los ingredientes
       if producto.ingredients
         producto.ingredients.each do |i|
           if stock_a_pedir.key?(i.sku.to_s)
@@ -44,6 +50,7 @@ class ApplicationRecord < ActiveRecord::Base
           end
           productoi = Product.find_by_sku(i.sku.to_s)
           factori = (stock_a_pedir[i.sku.to_s] / productoi.lote_produccion).ceil
+          ## se hace exactamente lo mismo que arriba para el nuevo ingrediente
           if productoi.ingredients
             productoi.ingredients.each do |j|
               if stock_a_pedir.key?(j.sku.to_s)
@@ -51,6 +58,7 @@ class ApplicationRecord < ActiveRecord::Base
               else
                 stock_a_pedir[j.sku.to_s] = j.cantidad_para_lote * factori
               end
+              ## se hace exactamente lo mismo que arriba para el nuevo ingrediente por tercera vez
               productoj = Product.find_by_sku(j.sku.to_s)
               factorj = (stock_a_pedir[j.sku.to_s] / productoj.lote_produccion).ceil
               if productoj.ingredients
@@ -67,6 +75,9 @@ class ApplicationRecord < ActiveRecord::Base
         end
       end
     end
+    puts '------------------------revisar diccionario start--------------------------------------'
+    puts stock_a_pedir
+    puts '------------------------revisar diccionario fin--------------------------------------'
     stock_a_pedir.each do |sku, cantidad|
       #p ("SKU" : sku)
       #p ("Q": cantidad)
@@ -84,6 +95,14 @@ class ApplicationRecord < ActiveRecord::Base
     #Pedir a otros grupos
     groups = producto.groups
     groups_id = groups.map{|m| m.id()}
+    puts '------------------------revisar groups start--------------------------------------'
+    puts groups
+    puts '------------------------revisar groups fin--------------------------------------'
+  
+    puts '------------------------revisar groups_id start--------------------------------------'
+    puts groups_id
+    puts '------------------------revisar groups_id fin--------------------------------------'
+  
     futuro_envio = false
     pedidos = []
     #p "Pedir a grupos"
@@ -92,20 +111,22 @@ class ApplicationRecord < ActiveRecord::Base
       #p ("Q :", cantidad)
       #p ("Grupo :", g)
       #p "*" * 10
-      pedido = JSON.parse(Bodega.Pedir(sku, cantidad, g).to_json)
-      if pedido
+      pedido = JSON.parse(Bodega.Pedir(sku.to_s, cantidad.to_s, g.to_s).to_json)
+    
+      ## está raro esta forma de analisar siesque se aceptó el pedido o no (no deberia ser con codes?)
+      if pedido.nil? == false
         #puts pedido
         pedidos.push(pedido)
       end
     end
     if pedidos.length >0
       pedidos.each do |ped|
-        if ped["aceptado"]
+        if ped["aceptado"] == true
           futuro_envio = true
         end
       end
     end
-    if !futuro_envio
+    if futuro_envio == false
       #Pedir en bodega
       #puts "bodega"
       if sku > "1016"
@@ -122,7 +143,7 @@ class ApplicationRecord < ActiveRecord::Base
             ingredientes_en_despacho.push([i.sku, q_ingredient])
           end
         end
-        if ingredientes_en_despacho == total_ingredientes
+        if ingredientes_en_despacho.count == total_ingredientes
           #p "Fabricar producto: ", sku
           Bodega.Fabricar_gratis(sku, cantidad)
         else

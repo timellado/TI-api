@@ -19,8 +19,10 @@ include Variable
     ## get_almacenes, luego se llama a la Api del Profesor para pedir los Sku con sus stock
     ## de cada almacen, para luego guardarlos en un diccionario con el resumen total de todos los sku.
     ## finalmente render Json retorna un json con los datos esperados
+    #pedido= Bodega.Pedir("1007", "1", "11")
     lista_stock = Inventory.get_inventory
     render json: lista_stock.to_json
+    #render json: pedido.to_json
 
   end
 
@@ -43,6 +45,7 @@ include Variable
             sku: @order[:sku],
             cantidad: @order[:cantidad],
             almacenId: @order[:almacen_id],
+            grupoProveedor: 10,
             aceptado: @order[:aceptado],
             ## revisar despachado
             despachado: @order[:despachado],
@@ -71,6 +74,7 @@ include Variable
             cantidad: @order[:cantidad],
             almacenId: @order[:almacenId],
             aceptado: @order[:aceptado],
+            grupoProveedor: 10,
             ## revisar despachado
             despachado: @order[:despachado],
             precio: @order[:precio]
@@ -87,6 +91,7 @@ include Variable
           sku: @order[:sku],
           cantidad: @order[:cantidad],
           almacenId: @order[:almacenId],
+          grupoProveedor: 10,
           aceptado: false,
           despachado: false,
           precio: @order[:precio]

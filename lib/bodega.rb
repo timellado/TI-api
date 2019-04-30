@@ -94,7 +94,7 @@ module Bodega
                             'almacenId' =>almacenid
                         })
                 status = response.code
-                #puts status
+                puts status
                 if status == 200
                         results = response.parsed_response  
                        #puts "respondio"  
@@ -104,8 +104,6 @@ module Bodega
                 else
                         return 
                 end
-                
-            rescue 
                 
                 return 
                     
