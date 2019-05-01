@@ -160,7 +160,7 @@ class ApplicationRecord < ActiveRecord::Base
           total_ingredientes = ingredientes.count
           ingredientes_a_mover = []
           ingredientes.each do |i|
-            q_ingredient = (((i.cantidad_para_lote * factor) / i.lote_produccion).ceil * i.lote_produccion).to_i
+            q_ingredient = ((i.cantidad_para_lote * factor).ceil).to_i
             #p "Moviendo a despacho: ", i.sku
             if Logica.puedo_mover_a_despacho(i.sku, q_ingredient)
               #Logica.mover_a_despacho_para_minimo(i.sku, q_ingredient)
