@@ -314,4 +314,19 @@ include Variable
         end
       end
     end
+    def self.puedo_mover_a_despacho(sku, cantidad)
+      lista_sku = Inventory.get_inventory()
+      got_sku = false
+      stock = 0
+      lista_sku.each do |js|
+        if js["sku"] == sku
+          got_sku = true
+          stock = js["total"]
+        end
+      end
+      if stock >= cantidad
+        return true
+      end
+      return false
+    end
 end

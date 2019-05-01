@@ -81,7 +81,7 @@ class ApplicationRecord < ActiveRecord::Base
     stock_a_pedir.each do |sku, cantidad|
       #p ("SKU" : sku)
       #p ("Q": cantidad)
-      
+
         producto = Product.find_by_sku(sku)
         factor =  (cantidad / producto.lote_produccion).ceil
         cantidad_a_pedir = (producto.lote_produccion * factor).to_i
@@ -90,13 +90,13 @@ class ApplicationRecord < ActiveRecord::Base
             cantidad -= s['total']
             factor =  (cantidad / producto.lote_produccion).ceil
             cantidad_a_pedir = (producto.lote_produccion * factor).to_i
-            
+
           end
         end
         if cantidad_a_pedir>0
           self.pedir_producto(sku, cantidad_a_pedir)
         end
-      
+
     end
   end
 
@@ -109,12 +109,12 @@ class ApplicationRecord < ActiveRecord::Base
     puts '------------------------revisar groups_id start--------------------------------------'
     puts sku,cantidad
     puts '------------------------revisar groups_id fin--------------------------------------'
-  
+
     puts '------------------------revisar groups start--------------------------------------'
     puts groups
     puts '------------------------revisar groups fin--------------------------------------'
-  
-    
+
+
     futuro_envio = false
     pedidos = []
     #p "Pedir a grupos"
@@ -131,11 +131,11 @@ class ApplicationRecord < ActiveRecord::Base
         #p "*" * 10
         if vacio
           pedido = JSON.parse(Bodega.Pedir(sku.to_s, cantidad.to_s, g.to_s).to_json)
-        else 
+        else
           pedido = JSON.parse(Bodega.Pedir(sku.to_s, cantidad.to_s, g.grupo.to_s).to_json)
         end
-        
-      
+
+
         ## está raro esta forma de analisar siesque se aceptó el pedido o no (no deberia ser con codes?)
         if pedido.nil? == false
           #puts pedido
@@ -158,22 +158,21 @@ class ApplicationRecord < ActiveRecord::Base
           schedule = false
           movidos = true
           total_ingredientes = ingredientes.count
-          ingredientes_en_despacho = []
+          ingredientes_a_mover = []
           ingredientes.each do |i|
             q_ingredient = (((i.cantidad_para_lote * factor) / i.lote_produccion).ceil * i.lote_produccion).to_i
             #p "Moviendo a despacho: ", i.sku
-            if Logica.mover_a_despacho_para_minimo(i.sku, q_ingredient)
-              ingredientes_en_despacho.push([i.sku, q_ingredient])
+            if Logica.puedo_mover_a_despacho(i.sku, q_ingredient)
+              #Logica.mover_a_despacho_para_minimo(i.sku, q_ingredient)
+              ingredientes_a_mover.push([i.sku, q_ingredient])
             end
           end
-          if ingredientes_en_despacho.count == total_ingredientes
+          if ingredientes_a_mover.count == total_ingredientes
             #p "Fabricar producto: ", sku
-            Bodega.Fabricar_gratis(sku, cantidad)
-          else
-            ingredientes_en_despacho.each do |i|
-              #p "Sacar de despacho producto: ", i[0]
-              Logica.sacar_de_despacho(i[0], i[1])
+            ingredientes_a_mover.each do |i|
+              Logica.mover_a_despacho_para_minimo(i[0], i[1])
             end
+            Bodega.Fabricar_gratis(sku, cantidad)
           end
         else
           if sku == "1001" || sku == "1004" || sku == "1011" || sku == "1013" || sku == "1016"
@@ -182,7 +181,7 @@ class ApplicationRecord < ActiveRecord::Base
           end
         end
       end
-    
+
   end
 
   def self.clean
