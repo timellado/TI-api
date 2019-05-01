@@ -41,7 +41,7 @@ include Variable
             @order.despachado = true
 
         if @order.save
-          render status: 200, json: {
+          render status: 201, json: {
             sku: @order[:sku],
             cantidad: @order[:cantidad],
             almacenId: @order[:almacen_id],
@@ -69,7 +69,7 @@ include Variable
         @order.despachado = true
 
         if @order.save
-          render status: 200, json: {
+          render status: 201, json: {
             sku: @order[:sku],
             cantidad: @order[:cantidad],
             almacenId: @order[:almacenId],
@@ -87,7 +87,7 @@ include Variable
           Logica.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad], @order[:almacenId])
      
       else
-        render status: 200, json: {
+        render status: 201, json: {
           sku: @order[:sku],
           cantidad: @order[:cantidad],
           almacenId: @order[:almacenId],

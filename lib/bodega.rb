@@ -1,7 +1,10 @@
 require 'httparty'
 require 'hash'
+require 'variable'
+
 module Bodega
         include Sha1
+        include Variable
         $uri = "https://integracion-2019-dev.herokuapp.com/bodega/"
 
 # GETS (Probados)
@@ -82,7 +85,7 @@ module Bodega
         #puts grupo
           if grupo != 10
             #cambiar en produccion
-            almacenid = "5cbd3ce444f67600049431e9"
+            almacenid = Variable.v_recepcion
             url = 'http://tuerca'+grupo.to_s+'.ing.puc.cl/'
             
             begin
@@ -94,9 +97,9 @@ module Bodega
                             'almacenId' =>almacenid
                         })
                 status = response.code
-                puts "Pedir grupo"
+                puts "Pedir grupo",grupo,status 
                 
-                if status == 200
+                if status == 200 || status == 201  
                         results = response.parsed_response  
                        #puts "respondio"  
                         puts results
@@ -106,6 +109,7 @@ module Bodega
                         return 
                 end
                 
+            rescue
                 return 
                     
             end

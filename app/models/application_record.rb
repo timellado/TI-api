@@ -81,12 +81,22 @@ class ApplicationRecord < ActiveRecord::Base
     stock_a_pedir.each do |sku, cantidad|
       #p ("SKU" : sku)
       #p ("Q": cantidad)
-      if cantidad > 0
+      
         producto = Product.find_by_sku(sku)
         factor =  (cantidad / producto.lote_produccion).ceil
         cantidad_a_pedir = (producto.lote_produccion * factor).to_i
-        self.pedir_producto(sku, cantidad_a_pedir)
-      end
+        stock.each do |s|
+          if s['sku'] == sku
+            cantidad -= s['total']
+            factor =  (cantidad / producto.lote_produccion).ceil
+            cantidad_a_pedir = (producto.lote_produccion * factor).to_i
+            
+          end
+        end
+        if cantidad_a_pedir>0
+          self.pedir_producto(sku, cantidad_a_pedir)
+        end
+      
     end
   end
 
@@ -94,19 +104,23 @@ class ApplicationRecord < ActiveRecord::Base
     producto = Product.find_by_sku(sku)
     #Pedir a otros grupos
     groups = producto.groups
+    vacio = false
     #groups_id = groups.map{|m| m.id()}
-    puts '------------------------revisar groups start--------------------------------------'
-    #puts groups
-    puts '------------------------revisar groups fin--------------------------------------'
-  
     puts '------------------------revisar groups_id start--------------------------------------'
-    #puts groups_id
+    puts sku,cantidad
     puts '------------------------revisar groups_id fin--------------------------------------'
   
+    puts '------------------------revisar groups start--------------------------------------'
+    puts groups
+    puts '------------------------revisar groups fin--------------------------------------'
+  
+    
     futuro_envio = false
     pedidos = []
     #p "Pedir a grupos"
-    if groups.nil?
+    if groups.length == 0
+      puts "vacio"
+      vacio = true
       groups = [1,2,3,4,5,6,7,8,9,11,12,13,14]
     end
 
@@ -115,7 +129,12 @@ class ApplicationRecord < ActiveRecord::Base
         #p ("Q :", cantidad)
         #p ("Grupo :", g)
         #p "*" * 10
-        pedido = JSON.parse(Bodega.Pedir(sku.to_s, cantidad.to_s, g.grupo.to_s).to_json)
+        if vacio
+          pedido = JSON.parse(Bodega.Pedir(sku.to_s, cantidad.to_s, g.to_s).to_json)
+        else 
+          pedido = JSON.parse(Bodega.Pedir(sku.to_s, cantidad.to_s, g.grupo.to_s).to_json)
+        end
+        
       
         ## está raro esta forma de analisar siesque se aceptó el pedido o no (no deberia ser con codes?)
         if pedido.nil? == false
@@ -132,7 +151,7 @@ class ApplicationRecord < ActiveRecord::Base
       end
       if futuro_envio == false
         #Pedir en bodega
-        #puts "bodega"
+        puts "bodega"
         if sku > "1016"
           ingredientes = producto.ingredients
           factor = (cantidad / producto.lote_produccion).ceil
