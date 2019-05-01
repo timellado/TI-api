@@ -32,7 +32,8 @@ class ApplicationRecord < ActiveRecord::Base
       minimo = (minimo * 1.3).to_f
       ## -----------------------------------
       producto = Product.find_by_sku(sku_a_pedir)
-      factor =  (minimo / producto.lote_produccion).ceil
+      factor =  (minimo / producto.lote_produccion).ceil #cuantos lotes debo producir
+
       ## cuanto debemos pedir nosotros para que nosotros estemos bien
       cantidad_a_pedir = producto.lote_produccion * factor
       if stock_a_pedir.key?(sku_a_pedir)
@@ -40,13 +41,14 @@ class ApplicationRecord < ActiveRecord::Base
       else
         stock_a_pedir[sku_a_pedir] = cantidad_a_pedir
       end
+      #######################################################################
       ## se agregan al diccionario los ingredientes
       if producto.ingredients
         producto.ingredients.each do |i|
           if stock_a_pedir.key?(i.sku.to_s)
-             stock_a_pedir[i.sku.to_s] += i.cantidad_para_lote * factor
+             stock_a_pedir[i.sku.to_s] += (i.cantidad_para_lote * factor)
           else
-            stock_a_pedir[i.sku.to_s] = i.cantidad_para_lote * factor
+            stock_a_pedir[i.sku.to_s] = (i.cantidad_para_lote * factor)
           end
           productoi = Product.find_by_sku(i.sku.to_s)
           factori = (stock_a_pedir[i.sku.to_s] / productoi.lote_produccion).ceil
@@ -99,6 +101,235 @@ class ApplicationRecord < ActiveRecord::Base
       
     end
   end
+
+
+  def self.minimum_general
+    minimum_stock_list = StockMinimo.get_minimum_stock
+    ## entrega una lista de lista donde muestra sku,nombre y cantidad
+    #puts minimum_stock_list
+    #puts current_products
+    stock_a_pedir = {}
+
+    minimum_stock_list.each do |mins|
+      sku_a_pedir = mins[0].to_s
+      minimo = mins[1].to_f
+      ## cachar bien cuanto queremos pedir
+      minimo = (minimo * 1.3).to_f
+      ## -----------------------------------
+      producto = Product.find_by_sku(sku_a_pedir)
+      factor =  (minimo / producto.lote_produccion).ceil #cuantos lotes debo producir
+
+      ## cuanto debemos pedir nosotros para que nosotros estemos bien
+      cantidad_a_pedir = producto.lote_produccion * factor
+      if stock_a_pedir.key?(sku_a_pedir)
+         stock_a_pedir[sku_a_pedir] += cantidad_a_pedir
+      else
+        stock_a_pedir[sku_a_pedir] = cantidad_a_pedir
+      end
+    end
+    return stock_a_pedir
+  end
+   
+  def self.minimum_specific
+    puts "Minimos"
+    stock_actual = Inventory.get_inventory
+    min1 = self.minimum_general
+    min = min1.clone
+    puts min
+    min.each do |sku,cantidad|
+      #cuanto ingrediente necesito = cantidad unidades padre * cantidad para 1 unida
+      product = Product.find_by_sku(sku)
+      ingredientes = product.ingredients
+      #si tiene ingredientes 1 nivel
+      if ingredientes.length >0
+          ingredientes.each do |ing|
+      
+            #cuanto ingrediente necesito = cantidad unidades padre * cantidad para 1 unida
+            cantidad_ingrediente = cantidad * (ing.cantidad_para_lote/ing.lote_produccion).to_f
+            lotes = (cantidad/ing.cantidad_para_lote).ceil #cuantos lotes necesito del ingrediente
+            u_total = lotes* ing.lote_produccion
+
+            if min1.key?(ing.sku)
+              min1[ing.sku] += u_total
+            else
+              min1[ing.sku] = u_total
+            end
+            product = Product.find_by_sku(ing.sku)
+            ingredientes = product.ingredients
+            #si tiene ingredientes 2 nivel
+            if ingredientes.length >0
+                ingredientes.each do |ing2|
+                  
+                  #cuanto ingrediente necesito = cantidad unidades padre * cantidad para 1 unida
+                  cantidad_ingrediente = cantidad * (ing2.cantidad_para_lote/ing2.lote_produccion).to_f
+                  lotes = (cantidad/ing2.cantidad_para_lote).ceil #cuantos lotes necesito del ingrediente
+                  u_total = lotes* ing2.lote_produccion
+                  if min1.key?(ing2.sku)
+                    min1[ing2.sku] += u_total
+                  else
+                    min1[ing2.sku] = u_total
+                  end
+                  product = Product.find_by_sku(ing2.sku)
+                  ingredientes = product.ingredients
+                  #si tiene ingredientes 3 nivel
+                  if ingredientes.length >0
+                      ingredientes.each do |ing3|
+                        
+                        #cuanto ingrediente necesito = cantidad unidades padre * cantidad para 1 unida
+                        cantidad_ingrediente = cantidad * (ing3.cantidad_para_lote/ing3.lote_produccion).to_f
+                        lotes = (cantidad/ing3.cantidad_para_lote).ceil #cuantos lotes necesito del ingrediente
+                        u_total = lotes* ing3.lote_produccion
+                        if min1.key?(ing3.sku)
+                          min1[ing3.sku] += u_total
+                        else
+                          min1[ing3.sku] = u_total
+                        end
+                        if ingredientes.length >0
+                          ingredientes.each do |ing4|
+                            
+                            #cuanto ingrediente necesito = cantidad unidades padre * cantidad para 1 unida
+                            cantidad_ingrediente = cantidad * (ing4.cantidad_para_lote/ing4.lote_produccion).to_f
+                            lotes = (cantidad/ing4.cantidad_para_lote).ceil #cuantos lotes necesito del ingrediente
+                            u_total = lotes* ing4.lote_produccion
+                            if min1.key?(ing4.sku)
+                              min1[ing4.sku] += u_total
+                            else
+                              min1[ing4.sku] = u_total
+                            end
+                            
+                          end
+                        end 
+                      end
+                  end 
+                  
+                end
+            end 
+          end
+      end
+    end  
+    min2 = min1.clone
+    min2.each do |sku,cantidad|
+      product = Product.find_by_sku(sku)
+      stock_actual.each do |d|
+        if d['sku'] == sku
+          cantidad -= d['total']
+          if cantidad<0
+            cantidad=0
+          end
+          lotes = (cantidad/product.lote_produccion).ceil #cuantos lotes necesito del ingrediente
+          u_total = lotes* product.lote_produccion   
+          min1[sku] = u_total
+          
+        end
+      end
+    end
+    puts 'fin',min1
+    min1.each do |m,ca|
+      if ca>0
+        self.fabricar_producto(m,ca)
+      end
+
+    end   
+  end
+
+
+
+
+  def self.fabricar_producto(sku,cantidad)
+    puts sku,cantidad
+    producto = Product.find_by_sku(sku)
+    fabrica = false
+    puedo_fabricar = false #puedo o nomandar a fabricarel producto dado sus ingredientes
+    cuaanto_fabrico = 0
+  
+    #pedir a los grupos
+    Group.all.each do |x|
+      if x.grupo != 10
+        pedido = JSON.parse(Bodega.Pedir(sku, cantidad, x.grupo).to_json)
+        puts x.grupo
+        if pedido
+          if pedido["aceptado"]
+            puts 'chao'
+            fabrica = true
+            return
+          end
+        end
+      end   
+    end
+
+    if fabrica
+        return 
+    else
+      # si es que tiene ingredientes  hay que mandar a produ lo que me alcance
+      cuaanto_fabrico = self.cuanto_puedo_producir(sku)
+      if cuaanto_fabrico >0
+        #mover a despacho
+        
+        puts "mover despacho -------------------------------------------"
+        puts cuaanto_fabrico
+        puts '-----------------------------------------'
+      end
+      #con lo ingredientes que tengo 
+      
+    
+        #ver cuantos de cada ingrediente tendgo
+        # ver cuentos lotes puedo producri
+        #ver cuanto cabe en despacho
+        #mover
+        #despachar 
+
+    end
+   
+  end
+
+  def self.cuanto_puedo_producir(sku)
+    puts 'cuanto',sku
+    producto = Product.find_by_sku(sku)
+    ingre = []
+    # si es que tiene ingredientes  hay que mandar a produ lo que me alcance
+    #con lo ingredientes que tengo 
+    ingredientes = producto.ingredients
+    if ingredientes.length > 0
+      #todo lo que deberia pedir
+      ingredientes.each do |ingrediente| 
+        sku_i = ingrediente.sku
+        lista_sku_recepcion = Logica.listar_no_vencidos(Variable.v_recepcion,sku_i)
+        lista_sku_i1 = Logica.listar_no_vencidos(Variable.v_inventario1,sku_i)
+        lista_sku_i2 = Logica.listar_no_vencidos(Variable.v_inventario2,sku_i)
+        lista_sku_pulmon = Logica.listar_no_vencidos(Variable.v_pulmon,sku_i)
+        #cuanto tengo en mi inventario de ese ingrediente
+        total = lista_sku_i1.length+lista_sku_i2.length+lista_sku_pulmon.length+lista_sku_recepcion.length
+        #cuantas unidades del padre equivale
+        unidades_padre = total*(ingrediente.cantidad_para_lote/ingrediente.lote_produccion).floor
+        lotes = (unidades_padre/producto.lote_produccion).floor
+        a_prodicr = lotes*producto.lote_produccion
+        ingre.push(a_prodicr)
+      end
+
+    else
+      lista_sku_recepcion = Logica.listar_no_vencidos(Variable.v_recepcion,sku)
+      lista_sku_i1 = Logica.listar_no_vencidos(Variable.v_inventario1,sku)
+      lista_sku_i2 = Logica.listar_no_vencidos(Variable.v_inventario2,sku)
+      lista_sku_pulmon = Logica.listar_no_vencidos(Variable.v_pulmon,sku)
+      #cuanto tengo en mi inventario de ese ingrediente
+      total = lista_sku_i1.length+lista_sku_i2.length+lista_sku_pulmon.length+lista_sku_recepcion.length
+      lotes = (total/producto.lote_produccion).floor
+      a_prodicr = lotes*producto.lote_produccion
+      return a_prodicr
+    end
+    if ingre.length >0
+      total = ingre.min
+      return total
+    else
+      return 0
+    end
+end
+    
+
+
+
+   
+
 
   def self.pedir_producto(sku, cantidad)
     producto = Product.find_by_sku(sku)
