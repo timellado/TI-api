@@ -1,7 +1,10 @@
 require 'httparty'
 require 'hash'
+require 'variable'
+
 module Bodega
         include Sha1
+        include Variable
         $uri = "https://integracion-2019-dev.herokuapp.com/bodega/"
 
 # GETS (Probados)
@@ -71,7 +74,7 @@ module Bodega
             :body => {'sku' => sku, 'cantidad' => cantidad}.to_json)
             results = response.parsed_response
             #puts cantidad
-          
+            puts "Fabricar gratis"
             puts results
             return results
 
@@ -82,31 +85,31 @@ module Bodega
         #puts grupo
           if grupo != 10
             #cambiar en produccion
-            almacenid = "5cbd3ce444f67600049431e9"
+            almacenid = Variable.v_recepcion
             url = 'http://tuerca'+grupo.to_s+'.ing.puc.cl/'
             
             begin
                 response = HTTParty.post(url+'orders',
-                        :headers =>{'Content-Type' => 'application/json'},
+                        :headers =>{'group' => '10'},
                         :body =>{
                             'sku' => sku,
                             'cantidad' => cantidad,
                             'almacenId' =>almacenid
                         })
                 status = response.code
-                #puts status
-                if status == 200
+                puts "Pedir grupo",grupo,status 
+                
+                if status == 200 || status == 201  
                         results = response.parsed_response  
                        #puts "respondio"  
-                        #puts results
+                        puts results
                         return results
                 
                 else
                         return 
                 end
                 
-            rescue 
-                
+            rescue
                 return 
                     
             end
