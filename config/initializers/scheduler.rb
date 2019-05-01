@@ -15,6 +15,12 @@ if defined?(::Rails::Server)
 		puts "Termina de limpiar"
   end
 
+  scheduler = Rufus::Scheduler.new(:max_work_threads => 1)
+  scheduler.every '2h',  :first_in => 20 do
+    ApplicationRecord.keep_minimum_stock
+    puts "Termina de pedir"
+  end
+
 end
 
 
