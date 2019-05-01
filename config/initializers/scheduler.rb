@@ -10,7 +10,7 @@ if defined?(::Rails::Server)
 
 
   job_sftp = Rufus::Scheduler.new(:max_work_threads => 1)
-  job_sftp.every '10m', :first_in => 2 do
+  job_sftp.every '5m', :first_in => 2 do
     ApplicationRecord.clean
 		puts "Termina de limpiar"
   end

@@ -28,7 +28,7 @@ include Variable
 
   def create_order
     #se crea la orden
-    header = request.headers["grupo"]
+    header = request.headers["group"]
     if header.nil?
       render json: {status: "error", code: 400, message: "Empty Header"}
     
