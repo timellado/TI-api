@@ -71,7 +71,7 @@ module Bodega
             :body => {'sku' => sku, 'cantidad' => cantidad}.to_json)
             results = response.parsed_response
             #puts cantidad
-          
+            puts "Fabricar gratis"
             puts results
             return results
 
@@ -94,11 +94,12 @@ module Bodega
                             'almacenId' =>almacenid
                         })
                 status = response.code
-                puts status
+                puts "Pedir grupo"
+                
                 if status == 200
                         results = response.parsed_response  
                        #puts "respondio"  
-                        #puts results
+                        puts results
                         return results
                 
                 else
