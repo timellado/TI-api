@@ -2,11 +2,13 @@ require 'inventory'
 require 'stock_minimo'
 require 'rufus-scheduler'
 require 'logica'
+require 'variable'
 class ApplicationRecord < ActiveRecord::Base
   self.abstract_class = true
   include Inventory
   include StockMinimo
   include Logica
+  include Variable
 
   def self.keep_minimum_stock
     ## entrega una lista de listas donde muestra el producto con su min stock
@@ -101,18 +103,28 @@ class ApplicationRecord < ActiveRecord::Base
   end
 
   def self.pedir_producto(sku, cantidad)
+    despacho_id = Variable.v_despacho
+    almacenes = JSON.parse(Bodega.all_almacenes().to_json)
+    totalS = nil
+    usedS = nil
+    almacenes.each do |it|
+      if it["_id"] == despacho_id
+        usedS = it["usedSpace"]
+        totalS = it["totalSpace"]
+      end
+    end
     producto = Product.find_by_sku(sku)
     #Pedir a otros grupos
     groups = producto.groups
     vacio = false
     #groups_id = groups.map{|m| m.id()}
-    puts '------------------------revisar groups_id start--------------------------------------'
-    puts sku,cantidad
-    puts '------------------------revisar groups_id fin--------------------------------------'
-
-    puts '------------------------revisar groups start--------------------------------------'
-    puts groups
-    puts '------------------------revisar groups fin--------------------------------------'
+    ##puts '------------------------revisar groups_id start--------------------------------------'
+    ##puts sku,cantidad
+    ##puts '------------------------revisar groups_id fin--------------------------------------'
+##
+    ##puts '------------------------revisar groups start--------------------------------------'
+    ##puts groups
+    ##puts '------------------------revisar groups fin--------------------------------------'
 
 
     futuro_envio = false
@@ -158,19 +170,33 @@ class ApplicationRecord < ActiveRecord::Base
           schedule = false
           movidos = true
           total_ingredientes = ingredientes.count
+          #if sku == '1111'
+          #  puts '##############################################################################################'
+          #  puts 'ingredientes:'+ingredientes
+          #  puts 'factor:'+factor
+          #  puts 'total_ingredientes:'+tota_ingredientes
+          #  puts 'cantidad:'+cantidad
+          #  puts '##############################################################################################'
+#
+          #end
           ingredientes_a_mover = []
+          contador_espacio = 0
+
           ingredientes.each do |i|
-            q_ingredient = ((i.cantidad_para_lote * factor).ceil).to_i
+            q_ingredient = ((i.unidades_bodega * factor).ceil).to_i
             #p "Moviendo a despacho: ", i.sku
             if Logica.puedo_mover_a_despacho(i.sku, q_ingredient)
               #Logica.mover_a_despacho_para_minimo(i.sku, q_ingredient)
               ingredientes_a_mover.push([i.sku, q_ingredient])
+              contador_espacio += q_ingredient
             end
           end
           if ingredientes_a_mover.count == total_ingredientes
             #p "Fabricar producto: ", sku
-            ingredientes_a_mover.each do |i|
-              Logica.mover_a_despacho_para_minimo(i[0], i[1])
+            if totalS.to_i-usedS.to_i >= contador_espacio
+              ingredientes_a_mover.each do |i|
+                Logica.mover_a_despacho_para_minimo(i[0], i[1])
+              end
             end
             Bodega.Fabricar_gratis(sku, cantidad)
           end
@@ -185,6 +211,6 @@ class ApplicationRecord < ActiveRecord::Base
   end
 
   def self.clean
-    Logica.clean_reception
+    Logica.clean_reception()
   end
 end

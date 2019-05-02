@@ -11,13 +11,13 @@ if defined?(::Rails::Server)
 
   job_sftp = Rufus::Scheduler.new(:max_work_threads => 1)
   job_sftp.every '5m', :first_in => 2 do
-    ApplicationRecord.clean
-		puts "Termina de limpiar"
+    ApplicationRecord.clean()
+		puts "--------------------------------Termina de limpiar--------------------------------------"
   end
 
   scheduler = Rufus::Scheduler.new(:max_work_threads => 1)
   scheduler.every '2h',  :first_in => 10 do
-    ApplicationRecord.keep_minimum_stock
+    ApplicationRecord.keep_minimum_stock()
     puts "Termina de pedir"
   end
 
