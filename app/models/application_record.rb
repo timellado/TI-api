@@ -231,57 +231,7 @@ class ApplicationRecord < ActiveRecord::Base
 
     end   
   end
-
-
-
-
-  def self.fabricar_producto(sku,cantidad)
-    puts sku,cantidad
-    producto = Product.find_by_sku(sku)
-    fabrica = false
-    puedo_fabricar = false #puedo o nomandar a fabricarel producto dado sus ingredientes
-    cuaanto_fabrico = 0
   
-    #pedir a los grupos
-    Group.all.each do |x|
-      if x.grupo != 10
-        pedido = JSON.parse(Bodega.Pedir(sku, cantidad, x.grupo).to_json)
-        puts x.grupo
-        if pedido
-          if pedido["aceptado"]
-            puts 'chao'
-            fabrica = true
-            return
-          end
-        end
-      end   
-    end
-
-    if fabrica
-        return 
-    else
-      # si es que tiene ingredientes  hay que mandar a produ lo que me alcance
-      cuaanto_fabrico = self.cuanto_puedo_producir(sku)
-      if cuaanto_fabrico >0
-        #mover a despacho
-        
-        puts "mover despacho -------------------------------------------"
-        puts cuaanto_fabrico
-        puts '-----------------------------------------'
-      end
-      #con lo ingredientes que tengo 
-      
-    
-        #ver cuantos de cada ingrediente tendgo
-        # ver cuentos lotes puedo producri
-        #ver cuanto cabe en despacho
-        #mover
-        #despachar 
-
-    end
-   
-  end
-
   def self.cuanto_puedo_producir(sku)
     puts 'cuanto',sku
     producto = Product.find_by_sku(sku)
@@ -323,8 +273,62 @@ class ApplicationRecord < ActiveRecord::Base
     else
       return 0
     end
-end
+  end
     
+
+
+
+  def self.fabricar_producto(sku,cantidad)
+    puts sku,cantidad
+    producto = Product.find_by_sku(sku)
+    fabrica = false
+    puedo_fabricar = false #puedo o nomandar a fabricarel producto dado sus ingredientes
+    cuaanto_fabrico = 0
+  
+    #pedir a los grupos
+    Group.all.each do |x|
+      if x.grupo != 10
+        pedido = JSON.parse(Bodega.Pedir(sku, cantidad, x.grupo).to_json)
+        puts x.grupo
+        if pedido
+          if pedido["aceptado"]
+            puts 'chao'
+            fabrica = true
+            return
+          end
+        end
+      end   
+    end
+
+    if fabrica
+        return 
+    else
+      # si es que tiene ingredientes  hay que mandar a produ lo que me alcance
+      cuaanto_fabrico = self.cuanto_puedo_producir(sku)
+      if cuaanto_fabrico >0
+        #mover a despacho
+        
+        puts "mover despacho -------------------------------------------"
+        puts cuaanto_fabrico
+        puts '-----------------------------------------'
+      end
+      #con lo ingredientes que tengo 
+      
+    
+        #ver cuantos de cada ingrediente tendgo
+        #revisar si nuevo minimo cambia
+          #mas grande, hago lo mismo
+          #mas chico hago el nuevo minimo
+          #ver si hay espacio para todo en despacho,
+            #si hay, mover de uno, ver si esta en pulmon 
+
+          #cuando esten todos, mando a producir
+        
+    end
+   
+  end
+
+ 
 
 
 
