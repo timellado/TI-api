@@ -90,7 +90,7 @@ module Bodega
             
             begin
                 response = HTTParty.post(url+'orders',
-                        :headers =>{'group' => '10'},
+                        :headers =>{'group' => '10','Content-Type' => 'application/json' },
                         :body =>{
                             'sku' => sku,
                             'cantidad' => cantidad,
