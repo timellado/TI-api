@@ -46,9 +46,9 @@ class ApplicationRecord < ActiveRecord::Base
       if producto.ingredients
         producto.ingredients.each do |i|
           if stock_a_pedir.key?(i.sku.to_s)
-             stock_a_pedir[i.sku.to_s] += i.cantidad_para_lote * factor
+             stock_a_pedir[i.sku.to_s] += i.unidades_bodega * factor
           else
-            stock_a_pedir[i.sku.to_s] = i.cantidad_para_lote * factor
+            stock_a_pedir[i.sku.to_s] = i.unidades_bodega * factor
           end
           productoi = Product.find_by_sku(i.sku.to_s)
           factori = (stock_a_pedir[i.sku.to_s] / productoi.lote_produccion).ceil
@@ -56,9 +56,9 @@ class ApplicationRecord < ActiveRecord::Base
           if productoi.ingredients
             productoi.ingredients.each do |j|
               if stock_a_pedir.key?(j.sku.to_s)
-                 stock_a_pedir[j.sku.to_s] += j.cantidad_para_lote * factori
+                 stock_a_pedir[j.sku.to_s] += j.unidades_bodega * factori
               else
-                stock_a_pedir[j.sku.to_s] = j.cantidad_para_lote * factori
+                stock_a_pedir[j.sku.to_s] = j.unidades_bodega * factori
               end
               ## se hace exactamente lo mismo que arriba para el nuevo ingrediente por tercera vez
               productoj = Product.find_by_sku(j.sku.to_s)
@@ -66,9 +66,9 @@ class ApplicationRecord < ActiveRecord::Base
               if productoj.ingredients
                 productoj.ingredients.each do |k|
                   if stock_a_pedir.key?(k.sku.to_s)
-                     stock_a_pedir[k.sku.to_s] += k.cantidad_para_lote * factorj
+                     stock_a_pedir[k.sku.to_s] += k.unidades_bodega * factorj
                   else
-                    stock_a_pedir[k.sku.to_s] = k.cantidad_para_lote * factorj
+                    stock_a_pedir[k.sku.to_s] = k.unidades_bodega * factorj
                   end
                 end
               end
