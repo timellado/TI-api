@@ -17,7 +17,7 @@ if defined?(::Rails::Server)
 
   scheduler = Rufus::Scheduler.new(:max_work_threads => 1)
   scheduler.every '2h',  :first_in => 10 do
-    ApplicationRecord.minimum_specific
+    ApplicationRecord.minimum_specific2
     puts "Termina de pedir"
   end
 
