@@ -142,9 +142,9 @@ class ApplicationRecord < ActiveRecord::Base
         #p ("Grupo :", g)
         #p "*" * 10
         if vacio
-          pedido = JSON.parse(Bodega.Pedir(sku.to_s, 10, g.to_s).to_json)
+          pedido = JSON.parse(Bodega.Pedir(sku.to_s, 5, g.to_s).to_json)
         else
-          pedido = JSON.parse(Bodega.Pedir(sku.to_s, 10, g.grupo.to_s).to_json)
+          pedido = JSON.parse(Bodega.Pedir(sku.to_s, 5, g.grupo.to_s).to_json)
         end
 
 
