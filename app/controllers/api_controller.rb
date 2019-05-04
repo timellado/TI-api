@@ -31,7 +31,7 @@ include Variable
     header = request.headers["group"]
     if header.nil?
       render json: {status: "error", code: 400, message: "Empty Header"}
-    elsif order_params[:cantidad] > 50
+    elsif order_params[:cantidad].to_i > 50
       render status: 201, json: {
         sku: order_params[:sku],
         cantidad: order_params[:cantidad],
