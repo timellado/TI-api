@@ -314,4 +314,22 @@ include Variable
         end
       end
     end
+
+    def self.espacio_libre(id)
+      almacenes = Bodega.all_almacenes()
+      espacio_total = 0
+      espacio_libre = 0
+      almacenes.each do |almacen|
+        if almacen['_id'] == id
+            espacio_total = almacen['totalSpace']
+        end
+      end
+      skus = Bodega.get_skus_almacen(id)
+      espacio_libre = espacio_total-skus.length
+      if espacio_libre <0
+        espacio_libre = 0
+      end
+      return espacio_libre
+    end
+
 end

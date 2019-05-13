@@ -160,8 +160,11 @@ class ApplicationRecord < ActiveRecord::Base
       end
     end
     puts 'ingredientes min'
+    
+    min = min.sort{|a,z|a<=>z}.to_h
     puts min
-    min1.each do |m,ca|
+    min.each do |m,ca|
+      
       if ca>0
         self.fabricar_producto(m,ca)
       end
@@ -214,32 +217,40 @@ class ApplicationRecord < ActiveRecord::Base
     cuaanto_fabrico = 0
   
     #pedir a los grupos
-    Group.all.each do |x|
-      if x.grupo != 10
-        pedido = JSON.parse(Bodega.Pedir(sku, cantidad, x.grupo).to_json)
-        puts x.grupo
-        if pedido
-          if pedido["aceptado"]
-            puts 'chao'
-            fabrica = true
-            return
-          end
-        end
-      end   
-    end
+  #  Group.all.each do |x|
+   #   if x.grupo != 10
+        #pedido = JSON.parse(Bodega.Pedir(sku, cantidad, x.grupo).to_json)
+    #    puts x.grupo
+     #   if pedido
+      #    if pedido["aceptado"]
+       #     puts 'chao'
+        #    fabrica = true
+         #   return
+          #end
+        #end   
+        #   end
+    #end
 
     if fabrica
         return 
     else
       # si es que tiene ingredientes  hay que mandar a produ lo que me alcance
-      cuaanto_fabrico = self.cuanto_puedo_producir(sku)
-      if cuaanto_fabrico >0
-        #mover a despacho
-        
-        puts "mover despacho -------------------------------------------"
-        puts cuaanto_fabrico
-        puts '-----------------------------------------'
+      if sku > '1016'
+        cuaanto_fabrico = self.cuanto_puedo_producir(sku)
+        if cuaanto_fabrico >0
+          #mover a despacho
+          puts "mover despacho -------------------------------------------"
+          puts cuaanto_fabrico
+          puts '-----------------------------------------'
+        end
+      else 
+        puts "pedir materia prima-------------"
+        if sku == "1001" || sku == "1004" || sku == "1011" || sku == "1013" || sku == "1016"
+          Bodega.Fabricar_gratis(sku,cantidad)
+        end
+
       end
+      
       #con lo ingredientes que tengo 
       
     
@@ -258,9 +269,9 @@ class ApplicationRecord < ActiveRecord::Base
 
 
   def self.cuanto_puedo_producir(sku)
-    puts 'cuanto',sku
+    #puts 'cuanto',sku
     producto = Product.find_by_sku(sku)
-    ingre = []
+    ingre = {}
     # si es que tiene ingredientes  hay que mandar a produ lo que me alcance
     #con lo ingredientes que tengo 
     ingredientes = producto.ingredients
@@ -276,26 +287,22 @@ class ApplicationRecord < ActiveRecord::Base
         lista_sku_pulmon = Logica.listar_no_vencidos(Variable.v_pulmon,sku_i)
         #cuanto tengo en mi inventario de ese ingrediente
         total = lista_sku_i1.length+lista_sku_i2.length+lista_sku_pulmon.length+lista_sku_recepcion.length
-        #cuantas unidades del padre equivale        
+        #cuantas unidades del padre equivale   
+        puts 'total',total     
         lotes_padre  = (total/ingrediente.unidades_bodega.to_f).floor
-        a_producir = lotes_padre*producto.lote_produccion
-
-        ingre.push(a_prodicr)
+        a_producir = lotes_padre*ingrediente.unidades_bodega
+        inge[sku_i] = total
+       
       end
-
-    else
-      lista_sku_recepcion = Logica.listar_no_vencidos(Variable.v_recepcion,sku)
-      lista_sku_i1 = Logica.listar_no_vencidos(Variable.v_inventario1,sku)
-      lista_sku_i2 = Logica.listar_no_vencidos(Variable.v_inventario2,sku)
-      lista_sku_pulmon = Logica.listar_no_vencidos(Variable.v_pulmon,sku)
-      #cuanto tengo en mi inventario de ese ingrediente
-      total = lista_sku_i1.length+lista_sku_i2.length+lista_sku_pulmon.length+lista_sku_recepcion.length
-      lotes = (total/producto.lote_produccion).floor
-      a_prodicr = lotes*producto.lote_produccion
-      return a_prodicr
     end
     if ingre.length >0
       total = ingre.min
+      #espacio necesario en desapacho
+      espacio_despacho = total * ingre.length
+      espacio_libre Logica.espacio_libre(Variable.v_despacho)
+      #..
+        
+
       return total
     else
       return 0
