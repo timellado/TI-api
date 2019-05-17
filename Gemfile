@@ -64,3 +64,6 @@ gem "rufus-scheduler"
 gem 'bootstrap'
 
 gem 'jquery-rails'
+
+gem 'whenever', :require => false
+
