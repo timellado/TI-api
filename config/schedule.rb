@@ -7,7 +7,7 @@ set :output, "log/cron.log"
 
 
 every 2.minutes do
-   rake "clean"
+    rake "clean"
 end
 
 every 20.minutes do
