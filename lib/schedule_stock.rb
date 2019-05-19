@@ -9,6 +9,7 @@ module ScheduleStock
   include StockMinimo
   include Logica
   include Variable
+  include PosibleProductSKU
 
   def self.keep_minimum_stock
     ## entrega una lista de listas donde muestra el producto con su min stock
@@ -22,6 +23,7 @@ module ScheduleStock
     minimum_stock_list.each do |mins|
       sku_a_pedir = mins[0].to_s
       minimo = mins[1].to_f
+      #
       stock.each do |d|
         if d['sku'] == sku_a_pedir
           minimo -= d['total']
@@ -148,7 +150,7 @@ module ScheduleStock
         end
 
 
-        ## está raro esta forma de analisar siesque se aceptó el pedido o no (no deberia ser con codes?)
+        ## está raro esta forma de analizar siesque se aceptó el pedido o no (no deberia ser con codes?)
         if pedido.nil? == false
           #puts pedido
           pedidos.push(pedido)
@@ -201,7 +203,7 @@ module ScheduleStock
             Bodega.Fabricar_gratis(sku, cantidad)
           end
         else
-          if sku == "1001" || sku == "1004" || sku == "1011" || sku == "1013" || sku == "1016"
+          if sku == "1001" || sku == "1004" || sku == "1007" || sku == "1008" || sku == "1010" || sku == "1011" || sku == "1013" || sku == "1016"
             #p "Fabricar materia prima: ", sku
             Bodega.Fabricar_gratis(sku, cantidad)
           end
@@ -213,4 +215,12 @@ module ScheduleStock
   def self.clean
     Logica.clean_reception()
   end
+
+  def self.pedir_productos_posibles_a_bodega
+    lista_skus = PosibleProductSKU.get_skus
+    lista_skus.each do |sku|
+      Bodega.Fabricar_gratis(sku, cantidad)
+    end
+  end
+
 end
