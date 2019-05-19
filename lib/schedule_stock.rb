@@ -42,40 +42,9 @@ module ScheduleStock
       else
         stock_a_pedir[sku_a_pedir] = cantidad_a_pedir
       end
-      ## se agregan al diccionario los ingredientes
-      if producto.ingredients
-        producto.ingredients.each do |i|
-          if stock_a_pedir.key?(i.sku.to_s)
-             stock_a_pedir[i.sku.to_s] += i.unidades_bodega * factor
-          else
-            stock_a_pedir[i.sku.to_s] = i.unidades_bodega * factor
-          end
-          productoi = Product.find_by_sku(i.sku.to_s)
-          factori = (stock_a_pedir[i.sku.to_s] / productoi.lote_produccion).ceil
-          ## se hace exactamente lo mismo que arriba para el nuevo ingrediente
-          if productoi.ingredients
-            productoi.ingredients.each do |j|
-              if stock_a_pedir.key?(j.sku.to_s)
-                 stock_a_pedir[j.sku.to_s] += j.unidades_bodega * factori
-              else
-                stock_a_pedir[j.sku.to_s] = j.unidades_bodega * factori
-              end
-              ## se hace exactamente lo mismo que arriba para el nuevo ingrediente por tercera vez
-              productoj = Product.find_by_sku(j.sku.to_s)
-              factorj = (stock_a_pedir[j.sku.to_s] / productoj.lote_produccion).ceil
-              if productoj.ingredients
-                productoj.ingredients.each do |k|
-                  if stock_a_pedir.key?(k.sku.to_s)
-                     stock_a_pedir[k.sku.to_s] += k.unidades_bodega * factorj
-                  else
-                    stock_a_pedir[k.sku.to_s] = k.unidades_bodega * factorj
-                  end
-                end
-              end
-            end
-          end
-        end
-      end
+      ## se agregan al diccionario los ingredientes (PROBAR)
+      self.add_ingredientes(sku_a_pedir,minimo,stock_a_pedir)
+      
     end
     puts '------------------------revisar diccionario start--------------------------------------'
     puts stock_a_pedir
@@ -101,6 +70,28 @@ module ScheduleStock
 
     end
   end
+
+  def add_ingredientes(sku,cantidad,stock_a_pedir)
+    product = Product.find_by_sku(sku)
+    factor =  (cantidad / product.lote_produccion).ceil
+    ingredientes = product.ingredients
+    if ingredientes.length >0
+      ingredientes.each do |i|
+        
+        if stock_a_pedir.key?(i.sku.to_s)
+           stock_a_pedir[i.sku.to_s] += i.unidades_bodega * factor
+        else
+          stock_a_pedir[i.sku.to_s] = i.unidades_bodega * factor
+        end
+        add_ingredientes(i.sku.to_s,stock_a_pedir[i.sku.to_s],stock_a_pedir)
+      end
+    else
+      return
+    end
+  end
+
+
+
 
   def self.pedir_producto(sku, cantidad)
     despacho_id = Variable.v_despacho
