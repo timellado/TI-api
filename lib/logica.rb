@@ -314,4 +314,34 @@ include Variable
         end
       end
     end
+    def self.puedo_mover_a_despacho(sku, cantidad)
+      lista_sku = Inventory.get_inventory()
+      got_sku = false
+      stock = 0
+      lista_sku.each do |js|
+        if js["sku"] == sku
+          got_sku = true
+          stock = js["total"]
+        end
+      end
+      if stock >= cantidad
+        return true
+      end
+      return false
+    end
+
+    def self.clean_despacho
+      self.clean_reception
+      despacho = Variable.v_despacho()
+      recepcion = Variable.v_recepcion()
+      @resul_despacho = JSON.parse(Bodega.get_skus_almacen(despacho).to_json)
+      @resul_despacho.each do |d|
+       # puts '########################'+d["_id"]+'####################################'
+        lista_id_no_vencidos = listar_no_vencidos(despacho,d["_id"])
+        lista_id_no_vencidos.each do |r|
+          Bodega.Mover_almacen(recepcion, r[0])
+        end
+      end
+
+    end
 end

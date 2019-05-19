@@ -29,7 +29,7 @@
         </td>
       <td><%=item["totalSpace"]%></td>
       <td><%=item["usedSpace"]%></td>
-      <td><%=item["totalSpace"].to_i - item["usedSpace"].to_i%></td>
+      <td><%=item["totalSpace"] - item["usedSpace"]%></td>
       </tr>
     <%end%>
   </tbody>

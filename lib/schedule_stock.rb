@@ -1,6 +1,10 @@
+require 'inventory'
+require 'stock_minimo'
+require 'logica'
+require 'variable'
+require_relative "../config/environment.rb"
 
-class ApplicationRecord < ActiveRecord::Base
-  self.abstract_class = true
+module ScheduleStock
   include Inventory
   include StockMinimo
   include Logica

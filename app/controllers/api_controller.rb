@@ -14,7 +14,7 @@ include Variable
     #para probar los metodos de la bodega, pner el metodo aqui y hacer un get a http://localhost:3000/orders
     #get_Prod_almacen_sku("5cbd3ce444f67600049431e9", "1001")
 
-
+    ##Logica.clean_despacho
     ## Se itera sobre los almacenesId provenientes de una lista que es retornada por la función
     ## get_almacenes, luego se llama a la Api del Profesor para pedir los Sku con sus stock
     ## de cada almacen, para luego guardarlos en un diccionario con el resumen total de todos los sku.
@@ -28,10 +28,19 @@ include Variable
 
   def create_order
     #se crea la orden
-    header = request.headers["grupo"]
+    header = request.headers["group"]
     if header.nil?
       render json: {status: "error", code: 400, message: "Empty Header"}
-    
+    elsif order_params[:cantidad].to_i > 50
+      render status: 201, json: {
+        sku: order_params[:sku],
+        cantidad: order_params[:cantidad],
+        almacenId:order_params[:almacenId],
+        grupoProveedor: 10,
+        aceptado: false,
+        despachado: false,
+        precio: 1
+      }.to_json
     else
       @order = Order.new(order_params)
 
@@ -85,7 +94,7 @@ include Variable
             message: "Formato invalido"}
         end
           Logica.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad], @order[:almacenId])
-     
+
       else
         render status: 201, json: {
           sku: @order[:sku],

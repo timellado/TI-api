@@ -1,11 +1,14 @@
 require 'bodega'
 require 'variable'
 require 'product_sku'
+require 'logica'
 class RootsController < ApplicationController
   include Bodega
   include Variable
   include ProductSKU
+  include Logica
   def index
+    
     @results_root = JSON.parse(Bodega.all_almacenes().to_json)
     @cocina = Variable.v_cocina()
     @recepcion = Variable.v_recepcion()
