@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  sku: MyString
+  cantidad: 1
+  fecha_llegada: 2019-05-19 18:33:44
+
+two:
+  sku: MyString
+  cantidad: 1
+  fecha_llegada: 2019-05-19 18:33:44
