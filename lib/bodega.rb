@@ -76,13 +76,15 @@ module Bodega
             #puts cantidad
             puts "Fabricar gratis"
             puts results
-            return results
-
+            if response.code == 200
+                return results
+            end
+            return nil
         end
 
 #Pedir a otro grupo(Probar)
         def self.Pedir(sku, cantidad, grupo)
-        #puts grupo
+        puts "Pidiendo sku & cantidad: ", sku, cantidad
           if grupo != 10
             #cambiar en produccion
             almacenid = Variable.v_recepcion

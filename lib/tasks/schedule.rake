@@ -15,3 +15,10 @@ task :keep_min_stock do
   puts "--------------------------------Termina de pedir--------------------------------------"
   
 end
+
+task :clean_order_register do
+  ScheduleStock.clean_order_register()
+  puts Time.now
+  puts "--------------------------------Termina clean OrderRegister--------------------------------------"
+  
+end
