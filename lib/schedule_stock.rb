@@ -90,7 +90,11 @@ module ScheduleStock
           end
           add_ingredientes(i.sku.to_s,stock_a_pedir[i.sku.to_s],stock_a_pedir)
         else
-          stock_a_pedir[i.sku.to_s] = 0
+          if stock_a_pedir.key?(i.sku.to_s)
+            stock_a_pedir[i.sku.to_s] += 0
+          else
+            stock_a_pedir[i.sku.to_s] = 0
+          end
         end
       end
 
