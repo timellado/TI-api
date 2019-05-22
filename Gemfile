@@ -69,3 +69,5 @@ gem 'whenever', :require => false
 
 gem 'awesome_print', require: 'ap'
 
+gem 'listen', '>= 3.0.5', '< 3.2'
+
