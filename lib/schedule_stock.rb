@@ -25,7 +25,7 @@ module ScheduleStock
       minimo = mins[1].to_f
       stock.each do |d|
         if d['sku'] == sku_a_pedir
-          minimo -= d['total']
+          minimo -= d['total'].to_i
           next if minimo <0
         end
       end
@@ -52,7 +52,7 @@ module ScheduleStock
     end
 
     puts '------------------------revisar diccionario start--------------------------------------'
-    puts stock_a_pedir
+    puts stock_a_pedir,"-------1--------", stock,"-------2--------", Inventory.get_inventory
     puts '------------------------revisar diccionario fin--------------------------------------'
     
     stock_a_pedir.each do |sku, cantidad|
@@ -78,16 +78,20 @@ module ScheduleStock
     product = Product.find_by_sku(sku)
     factor =  (cantidad / product.lote_produccion).ceil
     ingredientes = product.ingredients
-    
+    inventory = inv()
+  #  p inv, "inven arriba", ingredientes, "ingredientes arriba"
     if ingredientes.length >0
       ingredientes.each do |i|
-        
-        if stock_a_pedir.key?(i.sku.to_s)
-           stock_a_pedir[i.sku.to_s] += i.unidades_bodega * factor
+        if i.unidades_bodega*factor > inventory[i.sku.to_s].to_i
+          if stock_a_pedir.key?(i.sku.to_s)
+            stock_a_pedir[i.sku.to_s] += i.unidades_bodega * factor
+          else
+            stock_a_pedir[i.sku.to_s] = i.unidades_bodega * factor
+          end
+          add_ingredientes(i.sku.to_s,stock_a_pedir[i.sku.to_s],stock_a_pedir)
         else
-          stock_a_pedir[i.sku.to_s] = i.unidades_bodega * factor
+          stock_a_pedir[i.sku.to_s] = 0
         end
-        add_ingredientes(i.sku.to_s,stock_a_pedir[i.sku.to_s],stock_a_pedir)
       end
 
     else
@@ -209,15 +213,15 @@ module ScheduleStock
     len = inventory.length()
     inventory2 = Inventory.get_inventory
     pedido = OrderRegister.all
-    
+
     pedido.each do |p|
       (0..len-1).each do |i|
         if p["sku"] == inventory[i]["sku"]
           inventory2[i]["total"] = inventory2[i]["total"].to_i + p[:cantidad].to_i
         end
       end
-      return inventory2
     end
+    return inventory2
   end
 
   def self.clean_order_register
@@ -232,6 +236,15 @@ module ScheduleStock
 
   def self.clean
     Logica.clean_reception()
+  end
+
+  def self.inv
+    dic = {}
+    invent = Inventory.get_inventory
+    invent.each do |a|
+      dic[a["sku"]] = a["total"]
+    end
+    return dic
   end
 
 end

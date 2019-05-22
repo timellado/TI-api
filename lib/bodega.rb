@@ -21,7 +21,6 @@ module Bodega
 
          #Obtiene skus con stock en 1 almacen
          def self.get_skus_almacen(almacenid)
-            puts almacenid,"Arriba está almacenId"
             sha1 = Sha1.get_sha1('GET'+almacenid)
 
             response = HTTParty.get($uri+'skusWithStock?almacenId='+almacenid,
@@ -29,7 +28,7 @@ module Bodega
             'Authorization'=> 'INTEGRACION grupo10:'+sha1})
             results = response.parsed_response
             return results
-            puts results,"Arriba está results"
+
          end
 
          #obtener productos no vencidos en unn almacen para 1 sku
