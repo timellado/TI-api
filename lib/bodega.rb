@@ -5,7 +5,7 @@ require 'variable'
 module Bodega
         include Sha1
         include Variable
-        $uri = "https://integracion-2019-prod.herokuapp.com/bodega/"
+        $uri = "https://integracion-2019-dev.herokuapp.com/bodega/"
 
 # GETS (Probados)
         #obtiene todos los alamcenes
@@ -21,13 +21,15 @@ module Bodega
 
          #Obtiene skus con stock en 1 almacen
          def self.get_skus_almacen(almacenid)
+            puts almacenid,"Arriba está almacenId"
             sha1 = Sha1.get_sha1('GET'+almacenid)
+
             response = HTTParty.get($uri+'skusWithStock?almacenId='+almacenid,
             :headers =>{'Content-Type' => 'application/json',
             'Authorization'=> 'INTEGRACION grupo10:'+sha1})
             results = response.parsed_response
             return results
-            #puts results
+            puts results,"Arriba está results"
          end
 
          #obtener productos no vencidos en unn almacen para 1 sku
