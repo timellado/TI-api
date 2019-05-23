@@ -121,5 +121,30 @@ module Bodega
           end
         end
 
+        def self.get_inventory_group(grupo)
+                dic = {}
+                url = 'http://tuerca'+grupo.to_s+'.ing.puc.cl/'
+
+                begin
+                        response = HTTParty.get(url+'inventories')
+                        status = response.code
+                        puts "Pedir inventories grupo: "+ grupo.to_s, " Status: " + status.to_s
+        
+                        if status == 200 || status == 201
+                                results = response.parsed_response
+                               #puts "respondio"
+                                results.each do |a|
+                                        dic[a["sku"]] = a["total"]
+                                end
+                                puts dic
+                                return dic        
+                        else
+                                return
+                        end
+                rescue
+                        return
+                end
+        end
+
 
 end
