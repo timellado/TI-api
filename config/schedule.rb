@@ -13,3 +13,7 @@ end
 every 20.minutes do
     rake "keep_min_stock"
 end
+
+every 20.minutes do
+    rake "clean_order_register"
+end

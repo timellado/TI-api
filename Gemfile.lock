@@ -43,6 +43,7 @@ GEM
     arel (8.0.0)
     autoprefixer-rails (9.5.1)
       execjs
+    awesome_print (1.8.0)
     bindex (0.7.0)
     bootstrap (4.3.1)
       autoprefixer-rails (>= 9.1.0)
@@ -174,7 +175,7 @@ GEM
       sprockets (> 3.0)
       sprockets-rails
       tilt
-    selenium-webdriver (3.141.5926)
+    selenium-webdriver (3.142.0)
       childprocess (>= 0.5, < 2.0)
       rubyzip (~> 1.2, >= 1.2.2)
     spring (2.0.2)
@@ -216,6 +217,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  awesome_print
   bootstrap
   byebug
   capybara (~> 2.13)
@@ -242,4 +244,4 @@ DEPENDENCIES
   whenever
 
 BUNDLED WITH
-   1.17.3
+   2.0.1

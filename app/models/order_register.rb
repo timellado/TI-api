@@ -1,0 +1,2 @@
+class OrderRegister < ApplicationRecord
+end
