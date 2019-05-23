@@ -174,7 +174,7 @@ module ScheduleStock
         end
         if ingredientes_a_mover.count == total_ingredientes
           #p "Fabricar producto: ", sku
-          if totalS.to_i-usedS.to_i >= contador_espacio
+          if totalS.to_i-usedS.to_i > contador_espacio
             ingredientes_a_mover.each do |i|
               Logica.mover_a_despacho_para_minimo(i[0], i[1])
             end

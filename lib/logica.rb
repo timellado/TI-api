@@ -342,6 +342,7 @@ include Variable
           Bodega.Mover_almacen(recepcion, r[0])
         end
       end
-
     end
+    
+
 end
