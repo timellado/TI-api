@@ -12,10 +12,10 @@ module ScheduleStock
   include Variable
 
   def self.keep_minimum_stock
-    
+
     ## entrega una lista de listas donde muestra el producto con su min stock
     minimum_stock_list = StockMinimo.get_minimum_stock
-    
+
     ## entrega una lista de lista donde muestra sku,nombre y cantidad
     stock = suma_stock()
     stock_a_pedir = {}
@@ -54,12 +54,12 @@ module ScheduleStock
     puts '------------------------revisar diccionario start--------------------------------------'
     puts stock_a_pedir,"-------1--------", stock,"-------2--------", Inventory.get_inventory
     puts '------------------------revisar diccionario fin--------------------------------------'
-    
+
     stock_a_pedir.each do |sku, cantidad|
       producto = Product.find_by_sku(sku)
       factor =  (cantidad / producto.lote_produccion).ceil
       cantidad_a_pedir = (producto.lote_produccion * factor).to_i
-      
+
       stock.each do |s|
         if s['sku'] == sku
           cantidad -= s['total']
@@ -67,7 +67,7 @@ module ScheduleStock
           cantidad_a_pedir = (producto.lote_produccion * factor).to_i
         end
       end
-      
+
       if cantidad_a_pedir>0
         self.pedir_producto(sku, cantidad_a_pedir)
       end
@@ -104,6 +104,7 @@ module ScheduleStock
   end
 
   def self.pedir_producto(sku, cantidad)
+    cantidad_por_pedir = cantidad
     despacho_id = Variable.v_despacho
     almacenes = JSON.parse(Bodega.all_almacenes().to_json)
     totalS = nil
@@ -117,48 +118,40 @@ module ScheduleStock
     producto = Product.find_by_sku(sku)
 
     #Pedir a otros grupos
-    groups = producto.groups
-    vacio = false
-    futuro_envio = false
-    pedidos = []
-    
-    #p "Pedir a grupos"
-    
-    if groups.length == 0
-      puts "vacio"
-      vacio = true
-      groups = [1,2,3,4,5,6,7,8,9,11,12,13,14]
-    end
+    groups = [1,2,3,4,5,6,7,8,9,11,12,13,14]
+    respuesta = false
+
     groups.each do |g|
-
-      if vacio
-        pedido = JSON.parse(Bodega.Pedir(sku.to_s, 5, g.to_s).to_json)
-      else
-        pedido = JSON.parse(Bodega.Pedir(sku.to_s, 5, g.grupo.to_s).to_json)
-      end
-
-
-      ## está raro esta forma de analisar siesque se aceptó el pedido o no (no deberia ser con codes?)
-      if pedido.nil? == false
-        #puts pedido
-        pedidos.push(pedido)
-      end
-    end
-    if pedidos.length >0
-      pedidos.each do |ped|
-        if ped["aceptado"] == true
-          futuro_envio = true
+      pedido = JSON.parse(Bodega.Pedir(sku.to_s, 5, g.to_s).to_json)
+      # Si existe el pedido
+      if pedido
+        # Si se acepta el pedido
+        if pedido["aceptado"] == true
+          respuesta = true
+          #Ciclo hasta que la respuesta del grupo sea NO ENVIADO o que se cumpla la cantidad a pedir
+          while respuesta && cantidad_por_pedir > 0
+            pedido = JSON.parse(Bodega.Pedir(sku.to_s, 5, g.to_s).to_json)
+            if pedido
+              if pedido["aceptado"] == true
+                respuesta = true
+                cantidad_por_pedir -= 5
+              else
+                respuesta = false
+              end
+            else
+              respuesta = false
+            end
+          end
         end
       end
     end
-    if futuro_envio == false
+    # Si me falta por pedir ya recorridos todos los grupos
+    if cantidad_por_pedir > 0
       #Pedir en bodega
-      puts "bodega"
+      #puts "bodega"
       if sku > "1016"
         ingredientes = producto.ingredients
         factor = (cantidad / producto.lote_produccion).ceil
-        schedule = false
-        movidos = true
         total_ingredientes = ingredientes.count
         ingredientes_a_mover = []
         contador_espacio = 0
@@ -193,7 +186,7 @@ module ScheduleStock
 
   def self.crear_pedido(sku,cantidad)
     respuestaBodega = Bodega.Fabricar_gratis(sku, cantidad)
-    
+
     if respuestaBodega != nil
       respuestaBodegaPedido = respuestaBodega["created_at"].to_time
       puts respuestaBodegaPedido
@@ -201,7 +194,7 @@ module ScheduleStock
       puts respuestaBodegaDisponible
       respuestaBodegaTiempo = respuestaBodegaDisponible.to_i - respuestaBodegaPedido.to_i
       puts respuestaBodegaTiempo
-      puts " ------------------Creando pedido-------------------------------" 
+      puts " ------------------Creando pedido-------------------------------"
       p "Respuesta Pedido "+ respuestaBodegaPedido.to_s
       p "Respuesta Disponible "+ respuestaBodegaDisponible.to_s
       respuesta = DateTime.now.to_time.to_i + respuestaBodegaTiempo
@@ -229,12 +222,12 @@ module ScheduleStock
   end
 
   def self.clean_order_register
-    
+
     OrderRegister.all.each do |order|
       if order["fecha_llegada"].to_time.to_i < Time.now.to_i
         order.delete
       end
-        #p "start time now", order["fecha_llegada"].to_time, Time.now,"finish time"  
+        #p "start time now", order["fecha_llegada"].to_time, Time.now,"finish time"
     end
   end
 
@@ -249,6 +242,10 @@ module ScheduleStock
       dic[a["sku"]] = a["total"]
     end
     return dic
+  end
+
+  def self.clean_despacho
+
   end
 
 end
