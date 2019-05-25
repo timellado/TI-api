@@ -81,26 +81,32 @@ module Bodega
                 return results
                 #puts results
          end
+
          def self.Eliminar_todos()
                 puts "eliminar todos"
                 almacenes = [Variable.v_recepcion,Variable.v_cocina,Variable.v_despacho,Variable.v_pulmon,
                 Variable.v_inventario1, Variable.v_inventario2]
                 almacenes.each do |almacen|
                 #skus de un almacen
-                skus= self.get_skus_almacen(almacen)
-                if skus.length >0
-                        skus.each do |sku|
-                                products = self.get_Prod_almacen_sku(almacen,sku["_id"])
-                                if products.length>0
-                                        products.each do |product|
-                                                if almacen == Variable.v_inventario1
-                                                        self.Mover_almacen(Variable.v_despacho,product["_id"])
-                                                        self.Eliminar_producto(product["_id"])
-                                                end
-                                        end 
-                                end
+                        skus= self.get_skus_almacen(almacen)
+                        if skus.length >0
+                                skus.each do |sku|
+                                        products = self.get_Prod_almacen_sku(almacen,sku["_id"])
+                                        if products.length>0
+                                                products.each do |product|
+                                                        if almacen = Variable.v_inventario1
+                                                                self.Mover_almacen(Variable.v_despacho,product["_id"])
+                                                                self.Eliminar_producto(product["_id"])
+                                                        
+                                                        elsif almacen == Variable.v_pulmon
+                                                                self.Mover_almacen(Variable.v_recepcion,product["_id"])
+                                                                self.Mover_almacen(Variable.v_despacho,product["_id"])
+                                                                self.Eliminar_producto(product["_id"])
+                                                        end
+                                                end 
+                                        end
+                                end 
                         end 
-                end 
 
                 end
                 puts "termina de eliminar"

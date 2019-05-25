@@ -2,11 +2,13 @@ require 'bodega'
 require 'almacen'
 require 'product_sku'
 require 'variable'
+require 'stock_minimo'
 module Inventory
   include Bodega #todas las request a la bodega del profe estan en bodega.rb
   include Almacen
   include ProductSKU
   include Variable
+  include StockMinimo
 
   def self.get_inventory
     lista_stock = []
@@ -40,6 +42,29 @@ module Inventory
       lista_stock.push(stock)
     end
     return lista_stock
+  end
+
+  def self.get_inventory_for_group
+    min_stock = StockMinimo.get_minimum_stock_dic()
+    inventory = get_inventory()
+    new_inventory = []
+
+    inventory.each do |inv|
+      new_dic = {}
+      if min_stock.key?(inv["sku"].to_s)
+        resta = inv["total"].to_i - min_stock[inv["sku"].to_s]
+        next if resta <= 0
+        new_dic["sku"] = inv["sku"]
+        new_dic["nombre"] = inv["nombre"]
+        new_dic["total"] = resta
+      else
+        new_dic["sku"] = inv["sku"]
+        new_dic["nombre"] = inv["nombre"]
+        new_dic["total"] = inv["total"]
+      end
+      new_inventory.push(new_dic)
+    end
+    return new_inventory
   end
 
 

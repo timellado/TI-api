@@ -314,6 +314,7 @@ include Variable
         end
       end
     end
+    
     def self.puedo_mover_a_despacho(sku, cantidad)
       lista_sku = Inventory.get_inventory()
       got_sku = false
