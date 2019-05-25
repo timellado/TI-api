@@ -20,7 +20,8 @@ include Variable
     ## de cada almacen, para luego guardarlos en un diccionario con el resumen total de todos los sku.
     ## finalmente render Json retorna un json con los datos esperados
     #pedido= Bodega.Pedir("1007", "1", "11")
-    lista_stock = Inventory.get_inventory
+    
+    lista_stock = Inventory.get_inventory_for_group
     render json: lista_stock.to_json
     #render json: pedido.to_json
 

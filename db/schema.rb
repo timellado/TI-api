@@ -10,8 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-
-ActiveRecord::Schema.define(version: 20190520003602) do
+ActiveRecord::Schema.define(version: 20190525205639) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -20,6 +19,8 @@ ActiveRecord::Schema.define(version: 20190520003602) do
     t.integer "grupo"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "id_dev"
+    t.string "id_prod"
   end
 
   create_table "groups_products", force: :cascade do |t|
@@ -46,12 +47,6 @@ ActiveRecord::Schema.define(version: 20190520003602) do
     t.index ["product_id"], name: "index_ingredients_products_on_product_id"
   end
 
-
-  create_table "order_registers", force: :cascade do |t|
-    t.string "sku"
-    t.integer "cantidad"
-    t.datetime "fecha_llegada"
-
   create_table "ordencompras", force: :cascade do |t|
     t.string "sku"
     t.string "cliente"
@@ -59,7 +54,14 @@ ActiveRecord::Schema.define(version: 20190520003602) do
     t.string "fechaEntrega"
     t.integer "cantidad"
     t.string "estado"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
+  create_table "order_registers", force: :cascade do |t|
+    t.string "sku"
+    t.integer "cantidad"
+    t.datetime "fecha_llegada"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

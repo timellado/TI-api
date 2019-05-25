@@ -14,7 +14,7 @@ include Variable
 ## enviar y false en el caso contrario
 
     def self.sku_disponible(sku, cantidad_pedida)
-        lista_sku = Inventory.get_inventory()
+        lista_sku = Inventory.get_inventory_for_group()
         got_sku = false
         stock = 0
         lista_sku.each do |js|
@@ -314,7 +314,8 @@ include Variable
         end
       end
     end
-    def self.puedo_mover_a_despacho(sku, cantidad)
+
+    def self.tengo_stock(sku, cantidad)
       lista_sku = Inventory.get_inventory()
       got_sku = false
       stock = 0
@@ -344,5 +345,109 @@ include Variable
       end
     end
     
+    def self.mover_a_cocina(sku,cantidad)
+      producto = Product.find_by_sku(sku)
+      ingredientes = producto.ingredients
+      factor = (cantidad / producto.lote_produccion).ceil
+      schedule = false
+      movidos = true
+      total_ingredientes = ingredientes.count
+      ingredientes_a_mover = []
+
+      (0..factor-1).each do |fac|
+        contador_espacio = 0
+        ingredientes.each do |i|
+          q_ingredient = ((i.unidades_bodega).ceil).to_i
+          #p "Moviendo a despacho: ", i.sku
+          if tengo_stock(i.sku, q_ingredient)
+            #Logica.mover_a_despacho_para_minimo(i.sku, q_ingredient)
+            ingredientes_a_mover.push([i.sku, q_ingredient])
+            contador_espacio += q_ingredient
+          end
+        end
+        if ingredientes_a_mover.count == total_ingredientes
+          #p "Fabricar producto: ", sku
+          if revisar_espacio_cocina(contador_espacio)
+            ingredientes_a_mover.each do |i|
+              Logica.mover_a_cocina_para_minimo(i[0], i[1])
+            end
+          end
+          Bodega.Fabricar_gratis(sku, cantidad)
+        end
+      end
+    end
+
+    def self.revisar_espacio_cocina(cantidad)
+      almacenes = JSON.parse(Bodega.all_almacenes().to_json)
+      almacenes.each do |it|
+        if it["_id"] == cocina_id
+          usedS = it["usedSpace"]
+          totalS = it["totalSpace"]
+        end
+      end
+
+      if totalS.to_i-usedS.to_i-2 > cantidad
+        return true
+      end
+      return false    
+    end
+
+    def self.mover_a_cocina_para_minimo(sku, cantidad)
+      lista_sku = Inventory.get_inventory()
+      got_sku = false
+      stock = 0
+      lista_sku.each do |js|
+        if js["sku"] == sku
+          got_sku = true
+          stock = js["total"]
+        end
+      end
+      if stock >= cantidad
+        lista_sku_recepcion = self.listar_no_vencidos(Variable.v_recepcion,sku)
+        lista_sku_i1 = self.listar_no_vencidos(Variable.v_inventario1,sku)
+        lista_sku_i2 = self.listar_no_vencidos(Variable.v_inventario2,sku)
+        lista_sku_pulmon = self.listar_no_vencidos(Variable.v_pulmon,sku)
+
+        cont = 0
+
+        (0..lista_sku_recepcion.length-1).each do |i|
+          if cont >= cantidad
+            return true
+          end
+          Bodega.Mover_almacen(Variable.v_cocina,lista_sku_recepcion[i][0])
+          cont = cont + 1
+        end
+
+        (0..lista_sku_i1.length-1).each do |i|
+          if cont >= cantidad
+            return true
+          end
+          Bodega.Mover_almacen(Variable.v_cocina,lista_sku_i1[i][0])
+          cont = cont + 1
+        end
+
+        (0..lista_sku_i2.length-1).each do |i|
+          if cont >= cantidad
+            return true
+          end
+          Bodega.Mover_almacen(Variable.v_cocina,lista_sku_i2[i][0])
+          cont = cont + 1
+        end
+
+        self.clean_reception
+
+        while cont < cantidad do
+          (0..lista_sku_pulmon.length-1).each do |i|
+            product_id = lista_sku_pulmon[i][0]
+            Bodega.Mover_almacen(Variable.v_recepcion,lista_sku_pulmon[i][0])
+            Bodega.Mover_almacen(Variable.v_cocina,product_id)
+            cont = cont +1
+          end
+        end
+        return true
+      else
+        return false
+      end
+    end
 
 end
