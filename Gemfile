@@ -11,6 +11,7 @@ gem 'rails', '~> 5.1.6', '>= 5.1.6.2'
 # Use postgresql as the database for Active Record
 gem 'pg'
 # Use Puma as the app server
+gem 'mini_racer'
 gem 'puma', '~> 3.7'
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 5.0'
@@ -71,3 +72,5 @@ gem 'awesome_print', require: 'ap'
 
 gem 'listen', '>= 3.0.5', '< 3.2'
 
+# Sftp conection
+gem 'net-sftp'
