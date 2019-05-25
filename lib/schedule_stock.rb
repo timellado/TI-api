@@ -161,25 +161,27 @@ module ScheduleStock
         movidos = true
         total_ingredientes = ingredientes.count
         ingredientes_a_mover = []
-        contador_espacio = 0
 
-        ingredientes.each do |i|
-          q_ingredient = ((i.unidades_bodega * factor).ceil).to_i
-          #p "Moviendo a despacho: ", i.sku
-          if Logica.puedo_mover_a_despacho(i.sku, q_ingredient)
-            #Logica.mover_a_despacho_para_minimo(i.sku, q_ingredient)
-            ingredientes_a_mover.push([i.sku, q_ingredient])
-            contador_espacio += q_ingredient
-          end
-        end
-        if ingredientes_a_mover.count == total_ingredientes
-          #p "Fabricar producto: ", sku
-          if totalS.to_i-usedS.to_i > contador_espacio
-            ingredientes_a_mover.each do |i|
-              Logica.mover_a_despacho_para_minimo(i[0], i[1])
+        (0..factor-1).each do |fac|
+          contador_espacio = 0
+          ingredientes.each do |i|
+            q_ingredient = ((i.unidades_bodega).ceil).to_i
+            #p "Moviendo a despacho: ", i.sku
+            if Logica.tengo_stock(i.sku, q_ingredient)
+              #Logica.mover_a_despacho_para_minimo(i.sku, q_ingredient)
+              ingredientes_a_mover.push([i.sku, q_ingredient])
+              contador_espacio += q_ingredient
             end
           end
-          crear_pedido(sku, cantidad)
+          if ingredientes_a_mover.count == total_ingredientes
+            #p "Fabricar producto: ", sku
+            if totalS.to_i-usedS.to_i-2 > contador_espacio
+              ingredientes_a_mover.each do |i|
+                Logica.mover_a_despacho_para_minimo(i[0], i[1])
+              end
+            end
+            crear_pedido(sku, cantidad)
+          end
         end
       else
         if sku == "1001" || sku == "1004" || sku == "1011" || sku == "1013" || sku == "1016"
@@ -191,21 +193,23 @@ module ScheduleStock
     end
   end
 
+
+
   def self.crear_pedido(sku,cantidad)
     respuestaBodega = Bodega.Fabricar_gratis(sku, cantidad)
     
     if respuestaBodega != nil
       respuestaBodegaPedido = respuestaBodega["created_at"].to_time
-      puts respuestaBodegaPedido
+    #  puts respuestaBodegaPedido
       respuestaBodegaDisponible = respuestaBodega["disponible"].to_time
-      puts respuestaBodegaDisponible
+     # puts respuestaBodegaDisponible
       respuestaBodegaTiempo = respuestaBodegaDisponible.to_i - respuestaBodegaPedido.to_i
-      puts respuestaBodegaTiempo
+     # puts respuestaBodegaTiempo
       puts " ------------------Creando pedido-------------------------------" 
-      p "Respuesta Pedido "+ respuestaBodegaPedido.to_s
-      p "Respuesta Disponible "+ respuestaBodegaDisponible.to_s
+     # p "Respuesta Pedido "+ respuestaBodegaPedido.to_s
+     # p "Respuesta Disponible "+ respuestaBodegaDisponible.to_s
       respuesta = DateTime.now.to_time.to_i + respuestaBodegaTiempo
-      p "Respuesta Tiempo "+ Time.at(respuesta).to_s
+     # p "Respuesta Tiempo "+ Time.at(respuesta).to_s
 
       puts OrderRegister.create(sku: sku, cantidad: cantidad, fecha_llegada: Time.at(respuesta))
       puts " ------------------Pedido Creado-------------------------------"

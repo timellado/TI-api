@@ -1,10 +1,12 @@
 require 'httparty'
 require 'hash'
 require 'variable'
+require 'oc'
 
 module Bodega
         include Sha1
         include Variable
+        include Oc
         $uri = "https://integracion-2019-dev.herokuapp.com/bodega/"
 
 # GETS (Probados)
@@ -81,26 +83,32 @@ module Bodega
                 return results
                 #puts results
          end
+
          def self.Eliminar_todos()
                 puts "eliminar todos"
                 almacenes = [Variable.v_recepcion,Variable.v_cocina,Variable.v_despacho,Variable.v_pulmon,
                 Variable.v_inventario1, Variable.v_inventario2]
                 almacenes.each do |almacen|
                 #skus de un almacen
-                skus= self.get_skus_almacen(almacen)
-                if skus.length >0
-                        skus.each do |sku|
-                                products = self.get_Prod_almacen_sku(almacen,sku["_id"])
-                                if products.length>0
-                                        products.each do |product|
-                                                if almacen == Variable.v_inventario1
-                                                        self.Mover_almacen(Variable.v_despacho,product["_id"])
-                                                        self.Eliminar_producto(product["_id"])
-                                                end
-                                        end 
-                                end
+                        skus= self.get_skus_almacen(almacen)
+                        if skus.length >0
+                                skus.each do |sku|
+                                        products = self.get_Prod_almacen_sku(almacen,sku["_id"])
+                                        if products.length>0
+                                                products.each do |product|
+                                                        if almacen = Variable.v_inventario1
+                                                                self.Mover_almacen(Variable.v_despacho,product["_id"])
+                                                                self.Eliminar_producto(product["_id"])
+                                                        
+                                                        elsif almacen == Variable.v_pulmon
+                                                                self.Mover_almacen(Variable.v_recepcion,product["_id"])
+                                                                self.Mover_almacen(Variable.v_despacho,product["_id"])
+                                                                self.Eliminar_producto(product["_id"])
+                                                        end
+                                                end 
+                                        end
+                                end 
                         end 
-                end 
 
                 end
                 puts "termina de eliminar"
@@ -128,7 +136,7 @@ module Bodega
         end
 
 #Pedir a otro grupo(Probar)
-        def self.Pedir(sku, cantidad, grupo)
+        def self.Pedir(sku, cantidad, grupo, fechaEntrega, precioUnitario, canal)
         puts "Pidiendo sku & cantidad: ", sku, cantidad
           if grupo != 10
             #cambiar en produccion
@@ -141,7 +149,8 @@ module Bodega
                         :body =>{
                             'sku' => sku,
                             'cantidad' => cantidad,
-                            'almacenId' =>almacenid
+                            'almacenId' =>almacenid,
+                            'oc' => Oc.get_oc_profe_id(Group.find_by_grupo(grupo).id_dev, sku,fechaEntrega, cantidad, precioUnitario, canal)
                         })
                 status = response.code
                 puts "Pedir grupo",grupo,status

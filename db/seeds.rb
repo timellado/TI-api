@@ -39,46 +39,46 @@ end
 Group.create(
   [
     {
-      grupo: 1
+      grupo: 1, id_dev: "5cbd31b7c445af0004739be3", id_prod: "5cc66e378820160004a4c3bc"
     },
     {
-      grupo: 2
+      grupo: 2, id_dev: "5cbd31b7c445af0004739be4", id_prod: "5cc66e378820160004a4c3bd"
     },
     {
-      grupo: 3
+      grupo: 3, id_dev: "5cbd31b7c445af0004739be5", id_prod: "5cc66e378820160004a4c3be"
     },
     {
-      grupo: 4
+      grupo: 4, id_dev: "5cbd31b7c445af0004739be6", id_prod: "5cc66e378820160004a4c3bf"
     },
     {
-      grupo: 5
+      grupo: 5, id_dev: "5cbd31b7c445af0004739be7", id_prod: "5cc66e378820160004a4c3c0"
     },
     {
-      grupo: 6
+      grupo: 6, id_dev: "5cbd31b7c445af0004739be8", id_prod: "5cc66e378820160004a4c3c1"
     },
     {
-      grupo: 7
+      grupo: 7, id_dev: "5cbd31b7c445af0004739be9", id_prod: "5cc66e378820160004a4c3c2"
     },
     {
-      grupo: 8
+      grupo: 8, id_dev: "5cbd31b7c445af0004739bea", id_prod: "5cc66e378820160004a4c3c3"
     },
     {
-      grupo: 9
+      grupo: 9, id_dev: "5cbd31b7c445af0004739beb", id_prod: "5cc66e378820160004a4c3c4"
     },
     {
-      grupo: 10
+      grupo: 10, id_dev: "5cbd31b7c445af0004739bec", id_prod: "5cc66e378820160004a4c3c5"
     },
     {
-      grupo: 11
+      grupo: 11, id_dev: "5cbd31b7c445af0004739bed", id_prod: "5cc66e378820160004a4c3c6"
     },
     {
-      grupo: 12
+      grupo: 12, id_dev: "5cbd31b7c445af0004739bee", id_prod: "5cc66e378820160004a4c3c7"
     },
     {
-      grupo: 13
+      grupo: 13, id_dev: "5cbd31b7c445af0004739bef", id_prod: "5cc66e378820160004a4c3c8"
     },
     {
-      grupo: 14
+      grupo: 14, id_dev: "5cbd31b7c445af0004739bf0", id_prod: "5cc66e378820160004a4c3c9"
     }
   ]
 )
