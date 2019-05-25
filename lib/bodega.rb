@@ -1,10 +1,12 @@
 require 'httparty'
 require 'hash'
 require 'variable'
+require 'oc'
 
 module Bodega
         include Sha1
         include Variable
+        include Oc
         $uri = "https://integracion-2019-dev.herokuapp.com/bodega/"
 
 # GETS (Probados)
@@ -134,7 +136,7 @@ module Bodega
         end
 
 #Pedir a otro grupo(Probar)
-        def self.Pedir(sku, cantidad, grupo)
+        def self.Pedir(sku, cantidad, grupo, fechaEntrega, precioUnitario, canal)
         puts "Pidiendo sku & cantidad: ", sku, cantidad
           if grupo != 10
             #cambiar en produccion
@@ -147,7 +149,8 @@ module Bodega
                         :body =>{
                             'sku' => sku,
                             'cantidad' => cantidad,
-                            'almacenId' =>almacenid
+                            'almacenId' =>almacenid,
+                            'oc' => Oc.get_oc_profe_id(Group.find_by_grupo(grupo).id_dev, sku,fechaEntrega, cantidad, precioUnitario, canal)
                         })
                 status = response.code
                 puts "Pedir grupo",grupo,status
