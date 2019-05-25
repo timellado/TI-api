@@ -1,0 +1,2 @@
+class Ordencompra < ApplicationRecord
+end
