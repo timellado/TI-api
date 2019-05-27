@@ -137,7 +137,7 @@ module Bodega
 
 #Pedir a otro grupo(Probar)
         def self.Pedir(sku, cantidad, grupo)
-                puts "Pidiendo sku & cantidad: ", sku, cantidad
+             #   puts "Pidiendo sku & cantidad: ", sku, cantidad
                 if grupo != 10
                 #cambiar en produccion
                 almacenid = Variable.v_recepcion
@@ -152,12 +152,12 @@ module Bodega
                                 'almacenId' =>almacenid,
                                 })
                         status = response.code
-                        puts "Pedir grupo",grupo,status
+                   #     puts "Pedir grupo",grupo,status
 
                         if status == 200 || status == 201
                                 results = response.parsed_response
                         #puts "respondio"
-                                puts results
+                               # puts results
                                 return results
 
                         else
@@ -174,7 +174,7 @@ module Bodega
         end
 
         def self.Pedir2(sku, cantidad, grupo, fechaEntrega, precioUnitario, canal)
-                puts "Pidiendo sku & cantidad: ", sku, cantidad
+              #  puts "Pidiendo sku & cantidad: ", sku, cantidad
                 if grupo != 10
                 #cambiar en produccion
                 almacenid = Variable.v_recepcion
@@ -190,7 +190,7 @@ module Bodega
                                 'oc' => Oc.get_oc_profe_id(Group.find_by_grupo(grupo).id_dev, sku,fechaEntrega, cantidad, precioUnitario, canal)
                                 })
                         status = response.code
-                        puts "Pedir grupo",grupo,status
+                       # puts "Pedir grupo",grupo,status
 
                         if status == 200 || status == 201
                                 results = response.parsed_response
@@ -226,7 +226,7 @@ module Bodega
                                 results.each do |a|
                                         dic[a["sku"]] = a["total"]
                                 end
-                                puts dic
+                                #puts dic
                                 return dic        
                         else
                                 return
