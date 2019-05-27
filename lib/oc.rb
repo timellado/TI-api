@@ -12,7 +12,7 @@ module Oc
     def self.get_oc_profe(proveedor, sku,fechaEntrega, cantidad, precioUnitario, canal)
         response = HTTParty.put($uri+'crear',
             :headers =>{'Content-Type' => 'application/json'},
-            :body => {'cliente' => cliente,'proveedor' => proveedor, 'sku' =>sku, 
+            :body => {'cliente' => cliente,'proveedor' => proveedor, 'sku' =>sku,
             'fechaEntrega' => fechaEntrega, 'cantidad' => cantidad, 'precioUnitario' => precioUnitario,
             'canal'=> canal})
             results = response.parsed_response
@@ -25,5 +25,19 @@ module Oc
         id = oc_json["_id"]
         return id
     end
+
+
+    def self.get_info_oc(oc_id)
+      response = HTTParty.get($uri+'obtener/'+oc_id,
+      :headers =>{'Content-Type' => 'application/json'})
+      puts "Request API OC hecha para OC de otro grupo"
+      results = JSON.parse(response.to_s)
+      results = results[0]
+      #self.save_data(results)
+      return results
+  end
+
+
+
 
 end

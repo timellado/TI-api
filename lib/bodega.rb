@@ -136,42 +136,79 @@ module Bodega
         end
 
 #Pedir a otro grupo(Probar)
-        def self.Pedir(sku, cantidad, grupo, fechaEntrega, precioUnitario, canal)
-        puts "Pidiendo sku & cantidad: ", sku, cantidad
-          if grupo != 10
-            #cambiar en produccion
-            almacenid = Variable.v_recepcion
-            url = 'http://tuerca'+grupo.to_s+'.ing.puc.cl/'
+        def self.Pedir(sku, cantidad, grupo)
+             #   puts "Pidiendo sku & cantidad: ", sku, cantidad
+                if grupo != 10
+                #cambiar en produccion
+                almacenid = Variable.v_recepcion
+                url = 'http://tuerca'+grupo.to_s+'.ing.puc.cl/'
 
-            begin
-                response = HTTParty.post(url+'orders',
-                        :headers =>{'group' => '10', 'Content-Type' => 'application/json'},
-                        :body =>{
-                            'sku' => sku,
-                            'cantidad' => cantidad,
-                            'almacenId' =>almacenid,
-                            'oc' => Oc.get_oc_profe_id(Group.find_by_grupo(grupo).id_dev, sku,fechaEntrega, cantidad, precioUnitario, canal)
-                        })
-                status = response.code
-                puts "Pedir grupo",grupo,status
+                begin
+                        response = HTTParty.post(url+'orders',
+                                :headers =>{'group' => '10', 'Content-Type' => 'application/json'},
+                                :body =>{
+                                'sku' => sku,
+                                'cantidad' => cantidad,
+                                'almacenId' =>almacenid,
+                                })
+                        status = response.code
+                   #     puts "Pedir grupo",grupo,status
 
-                if status == 200 || status == 201
-                        results = response.parsed_response
-                       #puts "respondio"
-                        puts results
-                        return results
+                        if status == 200 || status == 201
+                                results = response.parsed_response
+                        #puts "respondio"
+                               # puts results
+                                return results
 
-                else
+                        else
+                                return
+                        end
+
+                rescue
                         return
+
                 end
 
-            rescue
-                return
+                #puts results
+                end
+        end
 
-            end
+        def self.Pedir2(sku, cantidad, grupo, fechaEntrega, precioUnitario, canal)
+              #  puts "Pidiendo sku & cantidad: ", sku, cantidad
+                if grupo != 10
+                #cambiar en produccion
+                almacenid = Variable.v_recepcion
+                url = 'http://tuerca'+grupo.to_s+'.ing.puc.cl/'
 
-            #puts results
-          end
+                begin
+                        response = HTTParty.post(url+'orders',
+                                :headers =>{'group' => '10', 'Content-Type' => 'application/json'},
+                                :body =>{
+                                'sku' => sku,
+                                'cantidad' => cantidad,
+                                'almacenId' =>almacenid,
+                                'oc' => Oc.get_oc_profe_id(Group.find_by_grupo(grupo).id_dev, sku,fechaEntrega, cantidad, precioUnitario, canal)
+                                })
+                        status = response.code
+                       # puts "Pedir grupo",grupo,status
+
+                        if status == 200 || status == 201
+                                results = response.parsed_response
+                        #puts "respondio"
+                                puts results
+                                return results
+
+                        else
+                                return
+                        end
+
+                rescue
+                        return
+
+                end
+
+                #puts results
+                end
         end
 
         def self.get_inventory_group(grupo)
@@ -189,7 +226,7 @@ module Bodega
                                 results.each do |a|
                                         dic[a["sku"]] = a["total"]
                                 end
-                                puts dic
+                                #puts dic
                                 return dic        
                         else
                                 return

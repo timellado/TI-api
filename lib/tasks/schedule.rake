@@ -11,6 +11,7 @@ task :clean do
 end
 
 task :keep_min_stock do
+  puts "--------------------------------Empieza de pedir--------------------------------------"
   ScheduleStock.keep_minimum_stock()
   puts Time.now
   puts "--------------------------------Termina de pedir--------------------------------------"

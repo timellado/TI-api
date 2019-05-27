@@ -4,12 +4,14 @@ require 'logica'
 require 'variable'
 require_relative "../config/environment.rb"
 require 'date'
+require 'product_sku'
 
 module ScheduleStock
   include Inventory
   include StockMinimo
   include Logica
   include Variable
+  include ProductSKU
 
   def self.keep_minimum_stock
     
@@ -17,7 +19,7 @@ module ScheduleStock
     minimum_stock_list = StockMinimo.get_minimum_stock
     
     ## entrega una lista de lista donde muestra sku,nombre y cantidad
-    stock = suma_stock()
+    stock = self.suma_stock()
     stock_a_pedir = {}
 
     minimum_stock_list.each do |mins|
@@ -74,15 +76,21 @@ module ScheduleStock
     end
   end
 
-  def add_ingredientes(sku,cantidad,stock_a_pedir)
+  def self.add_ingredientes(sku,cantidad,stock_a_pedir)
+    # p "ingreso a la función add con sku: "+ sku.to_s + " cantidad: "+cantidad.to_s+" stock_a_pedir: ",stock_a_pedir
     product = Product.find_by_sku(sku)
     factor =  (cantidad / product.lote_produccion).ceil
     ingredientes = product.ingredients
-    inventory = inv()
+    inventory = self.inv()
   #  p inv, "inven arriba", ingredientes, "ingredientes arriba"
     if ingredientes.length >0
       ingredientes.each do |i|
-        if i.unidades_bodega*factor > inventory[i.sku.to_s].to_i
+        if inventory.key?(i.sku.to_s)
+          comparar = inventory[i.sku.to_s].to_i
+        else
+          comparar = 0
+        end
+        if i.unidades_bodega*factor > comparar
           if stock_a_pedir.key?(i.sku.to_s)
             stock_a_pedir[i.sku.to_s] += i.unidades_bodega * factor
           else
@@ -105,7 +113,7 @@ module ScheduleStock
 
   def self.pedir_producto(sku, cantidad)
     despacho_id = Variable.v_despacho
-    almacenes = JSON.parse(Bodega.all_almacenes().to_json)
+    almacenes = JSON.parse(Bodega.all_almacenes.to_json)
     totalS = nil
     usedS = nil
     almacenes.each do |it|
@@ -125,7 +133,7 @@ module ScheduleStock
     #p "Pedir a grupos"
     
     if groups.length == 0
-      puts "vacio"
+     # puts "vacio"
       vacio = true
       groups = [1,2,3,4,5,6,7,8,9,11,12,13,14]
     end
@@ -153,19 +161,22 @@ module ScheduleStock
     end
     if futuro_envio == false
       #Pedir en bodega
-      puts "bodega"
+     # puts "bodega"
       if sku > "1016"
         ingredientes = producto.ingredients
         factor = (cantidad / producto.lote_produccion).ceil
         schedule = false
         movidos = true
-        total_ingredientes = ingredientes.count
+        total_ingredientes = ingredientes.count*factor
         ingredientes_a_mover = []
-
+       # p "-----------------------entrando al iterador !!!!!!!!!!!!!!!!!!!!!!"
         (0..factor-1).each do |fac|
+        #  p "------------------------------------------FAC----------------------------"+fac.to_s
           contador_espacio = 0
+         # p ingredientes.count
           ingredientes.each do |i|
             q_ingredient = ((i.unidades_bodega).ceil).to_i
+          #  p "q_ingredient: "+ q_ingredient.to_s
             #p "Moviendo a despacho: ", i.sku
             if Logica.tengo_stock(i.sku, q_ingredient)
               #Logica.mover_a_despacho_para_minimo(i.sku, q_ingredient)
@@ -173,29 +184,30 @@ module ScheduleStock
               contador_espacio += q_ingredient
             end
           end
-          if ingredientes_a_mover.count == total_ingredientes
+         # p "contador_espacio: "+ contador_espacio.to_s
+         # p "ingredientesAmover: "+ ingredientes_a_mover.to_s
+          break if ingredientes_a_mover.count != total_ingredientes
             #p "Fabricar producto: ", sku
             if totalS.to_i-usedS.to_i-2 > contador_espacio
               ingredientes_a_mover.each do |i|
                 Logica.mover_a_despacho_para_minimo(i[0], i[1])
               end
             end
-            crear_pedido(sku, cantidad)
-          end
+         # p "------------entrandoooo a crear_pedido1------------------------------"
+          self.crear_pedido(sku, cantidad)
         end
       else
-        if sku == "1001" || sku == "1004" || sku == "1011" || sku == "1013" || sku == "1016"
+        if sku == "1001" || sku == "1004" || sku == "1007" || sku == "1008" || sku == "1010" || sku == "1011" || sku == "1013" || sku == "1016"
           #p "Fabricar materia prima: ", sku
-          crear_pedido(sku, cantidad)
-          puts "-----------cerrar cantidad antes pedido "
+          self.crear_pedido(sku, cantidad)
+         # puts "-----------cerrar cantidad antes pedido "
         end
       end
     end
   end
 
-
-
   def self.crear_pedido(sku,cantidad)
+    "-----------------dentro crear_pedido---------------!!"
     respuestaBodega = Bodega.Fabricar_gratis(sku, cantidad)
     
     if respuestaBodega != nil
@@ -217,19 +229,32 @@ module ScheduleStock
   end
 
   def self.suma_stock
-    inventory = Inventory.get_inventory
-    len = inventory.length()
-    inventory2 = Inventory.get_inventory
     pedido = OrderRegister.all
+    inventario_dic = self.inv
+    new_dic = {}
+    nombre_sku = ProductSKU.get_sku_product
+    nueva_lista_inventory = []
 
     pedido.each do |p|
-      (0..len-1).each do |i|
-        if p["sku"] == inventory[i]["sku"]
-          inventory2[i]["total"] = inventory2[i]["total"].to_i + p[:cantidad].to_i
-        end
+      if inventario_dic.key?(p["sku"])
+        inventario_dic[p["sku"]] = p[:cantidad].to_i + inventario_dic[p["sku"]].to_i
+      else
+        inventario_dic[p["sku"]] = p[:cantidad].to_i
+      end
+
+    end
+
+    nombre_sku.each do |tupla|
+      diccionario_f = {} 
+      if inventario_dic.key?(tupla[0])
+        diccionario_f["sku"] = tupla[0]
+        diccionario_f["nombre"] = tupla[1]
+        diccionario_f["total"] = inventario_dic[tupla[0]]
+        nueva_lista_inventory.push(diccionario_f)
       end
     end
-    return inventory2
+
+    return nueva_lista_inventory
   end
 
   def self.clean_order_register
@@ -248,7 +273,7 @@ module ScheduleStock
 
   def self.inv
     dic = {}
-    invent = Inventory.get_inventory
+    invent = Inventory.get_inventory()
     invent.each do |a|
       dic[a["sku"]] = a["total"]
     end

@@ -2,11 +2,14 @@ require 'inventory'
 require 'logica'
 require 'bodega'
 require 'variable'
+require 'oc'
 class ApiController < ApplicationController
 include Inventory
 include Logica
 include Bodega
 include Variable
+include Oc
+
 
   skip_before_action :verify_authenticity_token
 
@@ -20,7 +23,7 @@ include Variable
     ## de cada almacen, para luego guardarlos en un diccionario con el resumen total de todos los sku.
     ## finalmente render Json retorna un json con los datos esperados
     #pedido= Bodega.Pedir("1007", "1", "11")
-    
+
     lista_stock = Inventory.get_inventory_for_group
     render json: lista_stock.to_json
     #render json: pedido.to_json
@@ -44,6 +47,8 @@ include Variable
       }.to_json
     else
       @order = Order.new(order_params)
+      #Pedir a API OC la informacion de la OC
+      oc_results = Oc.get_info_oc(@order[:oc])
 
       ## caso en que tenemos excedente de stock
       if Logica.sku_disponible(@order[:sku],@order[:cantidad])
