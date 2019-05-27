@@ -166,12 +166,12 @@ module Bodega
                         status = response.code
                         
                         
-                        puts "Pedir grupo",grupo,status
+                      #  puts "Pedir grupo",grupo,status
 
                         if status == 200 || status == 201
                                 results = response.parsed_response
-                        puts "respondio"
-                                puts results
+                      #  puts "respondio"
+                       #         puts results
                                 return results
 
                         else
@@ -194,7 +194,7 @@ module Bodega
                 begin
                         response = HTTParty.get(url+'inventories')
                         status = response.code
-                        puts "Pedir inventories grupo: "+ grupo.to_s, " Status: " + status.to_s
+        #                puts "Pedir inventories grupo: "+ grupo.to_s, " Status: " + status.to_s
         
                         if status == 200 || status == 201
                                 results = response.parsed_response
