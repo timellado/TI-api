@@ -10,7 +10,7 @@ module Oc
     
 
     def self.get_oc_profe(proveedor, sku,fechaEntrega, cantidad, precioUnitario, canal)
-        cliente = Group.find_by_grupo(10).id_dev
+        cliente = Group.find_by_grupo(10).id_prod
         urlNotificacion = "https://www.wikipedia.org/"
         response = HTTParty.put($uril+'crear',
             :headers =>{'Content-Type' => 'application/json'},
