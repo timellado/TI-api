@@ -5,8 +5,8 @@ require 'httparty'
 module FTP
 
   def self.get_id()
-  sftp = Net::SFTP.start('fierro.ing.puc.cl', 'grupo10_dev', password: 'xvHAjFqVU8W3fa4h4')  ## necesitamos dos conexiones
-  Net::SFTP.start('fierro.ing.puc.cl', 'grupo10_dev', password: 'xvHAjFqVU8W3fa4h4') do |entries|
+  sftp = Net::SFTP.start('fierro.ing.puc.cl', 'grupo10', password: 'xvHAjFqVU8W3fa4h4')  ## necesitamos dos conexiones
+  Net::SFTP.start('fierro.ing.puc.cl', 'grupo10', password: 'xvHAjFqVU8W3fa4h4') do |entries|
         entries.dir.foreach('/pedidos/') do |entry|
         #  puts "SFTP recibido"
           if entry.name.include?("xml")

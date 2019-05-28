@@ -6,7 +6,7 @@ require 'hash'
 module Oc
 
     include Variable
-    $uril = "https://integracion-2019-dev.herokuapp.com/oc/"
+    $uril = "https://integracion-2019-prod.herokuapp.com/oc/"
     
 
     def self.get_oc_profe(proveedor, sku,fechaEntrega, cantidad, precioUnitario, canal)
