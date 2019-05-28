@@ -175,11 +175,11 @@ module Bodega
                                 return results
 
                         else
-                                return
+                                return nil
                         end
 
                 rescue
-                        return
+                        return nil
 
                 end
 

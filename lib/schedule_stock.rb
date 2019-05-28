@@ -140,30 +140,30 @@ module ScheduleStock
     groups = [1,2,3,4,5,6,7,8,9,11,12,13,14]
     #end
     respuesta = false
-    groups.each do |g|
-      pedido = JSON.parse(Bodega.Pedir(sku.to_s, 5, g.to_s).to_json)
+    #groups.each do |g|
+     # pedido = JSON.parse(Bodega.Pedir(sku.to_s, 5, g.to_s).to_json)
       # Si existe el pedido
-      if pedido
+      #if pedido
         # Si se acepta el pedido
-        if pedido["aceptado"] == true
-          respuesta = true
+       # if pedido["aceptado"] == true
+          #respuesta = true
           #Ciclo hasta que la respuesta del grupo sea NO ENVIADO o que se cumpla la cantidad a pedir
-          while respuesta && cantidad_por_pedir > 0
-            pedido = JSON.parse(Bodega.Pedir(sku.to_s, 5, g.to_s).to_json)
-            if pedido
-              if pedido["aceptado"] == true
-                respuesta = true
-                cantidad_por_pedir -= 5
-              else
-                respuesta = false
-              end
-            else
-              respuesta = false
-            end
-          end
-        end
-      end
-    end
+        #  while respuesta && cantidad_por_pedir > 0
+         #   pedido = JSON.parse(Bodega.Pedir(sku.to_s, 5, g.to_s).to_json)
+          #  if pedido
+           #   if pedido["aceptado"] == true
+            #    respuesta = true
+             #   cantidad_por_pedir -= 5
+              #else
+               # respuesta = false
+          #    end
+           # else
+            #  respuesta = false
+            #end
+          #end
+        #end
+      #end
+    #end
     # Si me falta por pedir ya recorridos todos los grupos
 
     if cantidad_por_pedir>0
@@ -175,7 +175,7 @@ module ScheduleStock
         factor = (cantidad / producto.lote_produccion).ceil
         schedule = false
         movidos = true
-        total_ingredientes = ingredientes.count*factor
+        total_ingredientes = ingredientes.count
         ingredientes_a_mover = []
        # p "-----------------------entrando al iterador !!!!!!!!!!!!!!!!!!!!!!"
         (0..factor-1).each do |fac|
@@ -195,6 +195,10 @@ module ScheduleStock
           end
          # p "contador_espacio: "+ contador_espacio.to_s
          # p "ingredientesAmover: "+ ingredientes_a_mover.to_s
+          if ingredientes_a_mover.count != total_ingredientes
+
+            puts "NO TENGO INGREDIENTES"
+          end
           break if ingredientes_a_mover.count != total_ingredientes
             #p "Fabricar producto: ", sku
             if totalS.to_i-usedS.to_i-2 > contador_espacio
