@@ -183,7 +183,7 @@ module ScheduleStock
           contador_espacio = 0
          # p ingredientes.count
           ingredientes.each do |i|
-            q_ingredient = ((i.unidades_bodega).ceil).to_i
+            q_ingredient = ((i.unidades_bodega).ceil).to_i*
           #  p "q_ingredient: "+ q_ingredient.to_s
             #p "Moviendo a despacho: ", i.sku
             if Logica.tengo_stock(i.sku.to_s, q_ingredient)
@@ -207,13 +207,13 @@ module ScheduleStock
               end
             end
          # p "------------entrandoooo a crear_pedido1------------------------------"
-          self.crear_pedido(sku.to_s, cantidad)
+          self.crear_pedido(sku.to_s, cantidad/factor)
         end
       else
         puts "Voy a pedir "+sku.to_s
         if sku.to_s == "1001" || sku.to_s == "1004" || sku.to_s == "1007" || sku.to_s == "1008" || sku.to_s == "1010" || sku.to_s == "1011" || sku.to_s == "1013" || sku.to_s == "1016"
           #p "Fabricar materia prima: ", sku
-          self.crear_pedido(sku.to_s, cantidad)
+          self.crear_pedido(sku.to_s, cantidad*10)
          # puts "-----------cerrar cantidad antes pedido "
         end
       end
