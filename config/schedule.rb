@@ -10,7 +10,7 @@ every 5.minutes do
     rake "clean"
 end
 
-every 15.minutes do
+every 3.minutes do
     rake "keep_min_stock"
 end
 
