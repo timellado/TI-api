@@ -170,6 +170,7 @@ module ScheduleStock
       #Pedir en bodega
      # puts "bodega"
       if sku.to_s > "1016"
+        puts "si entro"
         ingredientes = producto.ingredients
         factor = (cantidad / producto.lote_produccion).ceil
         schedule = false
