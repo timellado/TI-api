@@ -21,3 +21,7 @@ end
 every 20.minutes do
     rake "clean_order_register"
 end
+
+every 13.minutes do
+    rake "filtrar_ftp"
+end

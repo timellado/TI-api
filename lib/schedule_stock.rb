@@ -110,20 +110,28 @@ module ScheduleStock
       return
     end
   end
-
-  def self.pedir_producto(sku, cantidad)
-    cantidad_por_pedir = cantidad
-    
-    despacho_id = Variable.v_despacho
+  
+  def self.total_space(id_almacen)
     almacenes = JSON.parse(Bodega.all_almacenes.to_json)
-    totalS = nil
-    usedS = nil
     almacenes.each do |it|
-      if it["_id"] == despacho_id
+      if it["_id"] == id_almacen
         usedS = it["usedSpace"]
         totalS = it["totalSpace"]
       end
     end
+    return [usedS,totalS]
+  end
+
+  def self.pedir_producto(sku, cantidad)
+    cantidad_por_pedir = cantidad
+    despacho_id = Variable.v_despacho
+    cocina_id = Variable.v_cocina
+    #almacenes = JSON.parse(Bodega.all_almacenes.to_json)
+    #totalS = nil
+    #usedS = nil
+    tuplaDes = self.total_space(despacho_id)
+    tuplaCoc = self.total_space(cocina_id)
+    
     producto = Product.find_by_sku(sku)
 
     #Pedir a otros grupos
@@ -200,12 +208,19 @@ module ScheduleStock
             puts "NO TENGO INGREDIENTES PARA "+sku.to_s
           end
           break if ingredientes_a_mover.count != total_ingredientes
-            #p "Fabricar producto: ", sku
-            if totalS.to_i-usedS.to_i-2 > contador_espacio
+          if producto.tipo_produccion == "fabrica"
+            if tuplaDes[1].to_i-tuplaDes[0].to_i-2 > contador_espacio
               ingredientes_a_mover.each do |i|
-                Logica.mover_a_despacho_para_minimo(i[0], i[1])
+                  Logica.mover_a_despacho_para_minimo(i[0], i[1])
               end
             end
+          else
+            if tuplaCoc[1].to_i-tuplaCoc[0].to_i-2 > contador_espacio
+              ingredientes_a_mover.each do |i|
+                  Logica.mover_a_cocina_para_minimo(i[0], i[1])
+              end
+            end
+          end
          # p "------------entrandoooo a crear_pedido1------------------------------"
           self.crear_pedido(sku.to_s, cantidad/factor)
         end

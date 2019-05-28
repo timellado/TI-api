@@ -135,6 +135,18 @@ module Bodega
             return nil
         end
 
+        def self.Mover_distribuidor(productid,oc)
+                sha1 = Sha1.get_sha1('DELETE'+productid+"hola"+"1"+oc)
+                #puts sha1
+                response = HTTParty.delete($uri+'stock',
+                :headers =>{'Content-Type' => 'application/json',
+                'Authorization'=> 'INTEGRACION grupo10:'+sha1},
+                :body => {'productoId'=> productid, 'oc'=> oc, 'direccion' => 'hola', 'precio' => 1}.to_json)
+                results = response.parsed_response
+                return results
+                #puts results
+        end
+
 #Pedir a otro grupo(Probar)
 
         def self.Pedir(sku, cantidad, grupo)

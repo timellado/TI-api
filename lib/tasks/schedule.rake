@@ -1,7 +1,9 @@
 require 'schedule_stock'
 require 'ftp'
+require 'filter_ftp'
 include ScheduleStock
 include FTP
+include Filter
 
 task :clean do
   ScheduleStock.clean()
@@ -28,4 +30,10 @@ task :clean_order_register do
   ScheduleStock.clean_order_register()
   puts Time.now
   puts "--------------------------------Termina clean OrderRegister--------------------------------------"
+end
+
+task :filtrar_ftp do
+  Filter.revisar_ftp()
+  puts Time.now
+  puts "--------------------------------Termina filtrar ftp--------------------------------------"
 end

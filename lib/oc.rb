@@ -26,6 +26,7 @@ module Oc
     def self.get_oc_profe_id(proveedor, sku,fechaEntrega, cantidad, precioUnitario, canal)
         oc_json = JSON.parse(get_oc_profe(proveedor, sku,fechaEntrega, cantidad, precioUnitario, canal).to_json)
         # p oc_json
+        
         id = oc_json["_id"]
         return id
     end
