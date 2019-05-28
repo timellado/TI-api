@@ -30,11 +30,9 @@ module Oc
     def self.get_info_oc(id)
       response = HTTParty.get("https://integracion-2019-dev.herokuapp.com/oc/"+'obtener/'+id.to_s,
       :headers =>{'Content-Type' => 'application/json'})
-      puts " +++++++++++++++++++++++++++++++++++++++++++"
       puts "Request API OC hecha para OC de otro grupo"
       results = JSON.parse(response.to_s)
       results = results[0]
-      puts results
       #self.save_data(results)
       return results
   end
