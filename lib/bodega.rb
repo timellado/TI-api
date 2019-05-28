@@ -7,7 +7,7 @@ module Bodega
         include Sha1
         include Variable
         include Oc
-        $uri = "https://integracion-2019-dev.herokuapp.com/bodega/"
+        $uri = "https://integracion-2019-prod.herokuapp.com/bodega/"
 
 # GETS (Probados)
         #obtiene todos los alamcenes
