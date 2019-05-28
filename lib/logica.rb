@@ -225,6 +225,7 @@ include Variable
     end
 
     def self.mover_a_despacho_para_minimo(sku, cantidad)
+      puts "Mover: "+cantidad.to_s+" de "+sku.to_s+" a despacho"
       lista_sku = Inventory.get_inventory()
       got_sku = false
       stock = 0

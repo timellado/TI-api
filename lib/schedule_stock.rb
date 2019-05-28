@@ -187,6 +187,7 @@ module ScheduleStock
             #p "Moviendo a despacho: ", i.sku
             if Logica.tengo_stock(i.sku.to_s, q_ingredient)
               #Logica.mover_a_despacho_para_minimo(i.sku, q_ingredient)
+              puts "si tengo stock del ingrediente "+i.sku.to_s+"para el producto "+sku.to_s              
               ingredientes_a_mover.push([i.sku.to_s, q_ingredient])
               contador_espacio += q_ingredient
             end
