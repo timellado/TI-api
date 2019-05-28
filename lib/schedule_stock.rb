@@ -14,10 +14,10 @@ module ScheduleStock
   include ProductSKU
 
   def self.keep_minimum_stock
-    
+
     ## entrega una lista de listas donde muestra el producto con su min stock
     minimum_stock_list = StockMinimo.get_minimum_stock
-    
+
     ## entrega una lista de lista donde muestra sku,nombre y cantidad
     stock = self.suma_stock()
     stock_a_pedir = {}
@@ -56,12 +56,12 @@ module ScheduleStock
     puts '------------------------revisar diccionario start--------------------------------------'
     puts stock_a_pedir,"-------1--------", stock,"-------2--------" #Inventory.get_inventory
     puts '------------------------revisar diccionario fin--------------------------------------'
-    
+
     stock_a_pedir.each do |sku, cantidad|
       producto = Product.find_by_sku(sku)
       factor =  (cantidad / producto.lote_produccion).ceil
       cantidad_a_pedir = (producto.lote_produccion * factor).to_i
-      
+
       stock.each do |s|
         if s['sku'] == sku
           cantidad -= s['total']
@@ -69,7 +69,7 @@ module ScheduleStock
           cantidad_a_pedir = (producto.lote_produccion * factor).to_i
         end
       end
-      
+
       if cantidad_a_pedir>0
         self.pedir_producto(sku, cantidad_a_pedir)
       end
@@ -111,19 +111,28 @@ module ScheduleStock
     end
   end
 
-  def self.pedir_producto(sku, cantidad)
-    cantidad_por_pedir = cantidad
-    
-    despacho_id = Variable.v_despacho
+  def self.total_space(id_almacen)
     almacenes = JSON.parse(Bodega.all_almacenes.to_json)
-    totalS = nil
-    usedS = nil
     almacenes.each do |it|
-      if it["_id"] == despacho_id
+      if it["_id"] == id_almacen
         usedS = it["usedSpace"]
         totalS = it["totalSpace"]
       end
     end
+    return [usedS,totalS]
+  end
+
+  def self.pedir_producto(sku, cantidad)
+    cantidad_por_pedir = cantidad
+
+    despacho_id = Variable.v_despacho
+    cocina_id = Variable.v_cocina
+    #almacenes = JSON.parse(Bodega.all_almacenes.to_json)
+    #totalS = nil
+    #usedS = nil
+    tuplaDes = self.total_space(despacho_id)
+    tuplaCoc = self.total_space(cocina_id)
+
     producto = Product.find_by_sku(sku)
 
     #Pedir a otros grupos
@@ -131,9 +140,9 @@ module ScheduleStock
     #vacio = false
     #futuro_envio = false
     #pedidos = []
-    
+
     #p "Pedir a grupos"
-    
+
     #if groups.length == 0
      # puts "vacio"
       #vacio = true
@@ -195,11 +204,19 @@ module ScheduleStock
          # p "ingredientesAmover: "+ ingredientes_a_mover.to_s
           break if ingredientes_a_mover.count != total_ingredientes
             #p "Fabricar producto: ", sku
-            if totalS.to_i-usedS.to_i-2 > contador_espacio
+          if producto.tipo_produccion == "fabrica"
+            if tuplaDes[1].to_i-tuplaDes[0].to_i-2 > contador_espacio
               ingredientes_a_mover.each do |i|
-                Logica.mover_a_despacho_para_minimo(i[0], i[1])
+                  Logica.mover_a_despacho_para_minimo(i[0], i[1])
               end
             end
+          else
+            if tuplaCoc[1].to_i-tuplaCoc[0].to_i-2 > contador_espacio
+              ingredientes_a_mover.each do |i|
+                  Logica.mover_a_cocina_para_minimo(i[0], i[1])
+              end
+            end
+          end
          # p "------------entrandoooo a crear_pedido1------------------------------"
           self.crear_pedido(sku, cantidad)
         end
@@ -216,7 +233,7 @@ module ScheduleStock
   def self.crear_pedido(sku,cantidad)
     "-----------------dentro crear_pedido---------------!!"
     respuestaBodega = Bodega.Fabricar_gratis(sku, cantidad)
-    
+
     if respuestaBodega != nil
       respuestaBodegaPedido = respuestaBodega["created_at"].to_time
     #  puts respuestaBodegaPedido
@@ -224,7 +241,7 @@ module ScheduleStock
      # puts respuestaBodegaDisponible
       respuestaBodegaTiempo = respuestaBodegaDisponible.to_i - respuestaBodegaPedido.to_i
      # puts respuestaBodegaTiempo
-      puts " ------------------Creando pedido-------------------------------" 
+      puts " ------------------Creando pedido-------------------------------"
      # p "Respuesta Pedido "+ respuestaBodegaPedido.to_s
      # p "Respuesta Disponible "+ respuestaBodegaDisponible.to_s
       respuesta = DateTime.now.to_time.to_i + respuestaBodegaTiempo
@@ -252,7 +269,7 @@ module ScheduleStock
     end
 
     nombre_sku.each do |tupla|
-      diccionario_f = {} 
+      diccionario_f = {}
       if inventario_dic.key?(tupla[0])
         diccionario_f["sku"] = tupla[0]
         diccionario_f["nombre"] = tupla[1]
@@ -265,12 +282,12 @@ module ScheduleStock
   end
 
   def self.clean_order_register
-    
+
     OrderRegister.all.each do |order|
       if order["fecha_llegada"].to_time.to_i < Time.now.to_i
         order.delete
       end
-        #p "start time now", order["fecha_llegada"].to_time, Time.now,"finish time"  
+        #p "start time now", order["fecha_llegada"].to_time, Time.now,"finish time"
     end
   end
 
