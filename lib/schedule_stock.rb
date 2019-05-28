@@ -169,7 +169,7 @@ module ScheduleStock
     if cantidad_por_pedir>0
       #Pedir en bodega
      # puts "bodega"
-      if sku > "1016"
+      if sku.to_s > "1016"
         ingredientes = producto.ingredients
         factor = (cantidad / producto.lote_produccion).ceil
         schedule = false
@@ -185,9 +185,9 @@ module ScheduleStock
             q_ingredient = ((i.unidades_bodega).ceil).to_i
           #  p "q_ingredient: "+ q_ingredient.to_s
             #p "Moviendo a despacho: ", i.sku
-            if Logica.tengo_stock(i.sku, q_ingredient)
+            if Logica.tengo_stock(i.sku.to_s, q_ingredient)
               #Logica.mover_a_despacho_para_minimo(i.sku, q_ingredient)
-              ingredientes_a_mover.push([i.sku, q_ingredient])
+              ingredientes_a_mover.push([i.sku.to_s, q_ingredient])
               contador_espacio += q_ingredient
             end
           end
@@ -201,12 +201,12 @@ module ScheduleStock
               end
             end
          # p "------------entrandoooo a crear_pedido1------------------------------"
-          self.crear_pedido(sku, cantidad)
+          self.crear_pedido(sku.to_s, cantidad)
         end
       else
-        if sku == "1001" || sku == "1004" || sku == "1007" || sku == "1008" || sku == "1010" || sku == "1011" || sku == "1013" || sku == "1016"
+        if sku.to_s == "1001" || sku.to_s == "1004" || sku.to_s == "1007" || sku.to_s == "1008" || sku.to_s == "1010" || sku.to_s == "1011" || sku.to_s == "1013" || sku.to_s == "1016"
           #p "Fabricar materia prima: ", sku
-          self.crear_pedido(sku, cantidad)
+          self.crear_pedido(sku.to_s, cantidad)
          # puts "-----------cerrar cantidad antes pedido "
         end
       end
