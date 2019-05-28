@@ -54,7 +54,7 @@ module ScheduleStock
     end
 
     puts '------------------------revisar diccionario start--------------------------------------'
-    puts stock_a_pedir,"-------1--------", stock,"-------2--------", Inventory.get_inventory
+    puts stock_a_pedir,"-------1--------", stock,"-------2--------" #Inventory.get_inventory
     puts '------------------------revisar diccionario fin--------------------------------------'
     
     stock_a_pedir.each do |sku, cantidad|
@@ -112,6 +112,8 @@ module ScheduleStock
   end
 
   def self.pedir_producto(sku, cantidad)
+    cantidad_por_pedir = cantidad
+    
     despacho_id = Variable.v_despacho
     almacenes = JSON.parse(Bodega.all_almacenes.to_json)
     totalS = nil
@@ -125,41 +127,46 @@ module ScheduleStock
     producto = Product.find_by_sku(sku)
 
     #Pedir a otros grupos
-    groups = producto.groups
-    vacio = false
-    futuro_envio = false
-    pedidos = []
+    #groups = producto.groups
+    #vacio = false
+    #futuro_envio = false
+    #pedidos = []
     
     #p "Pedir a grupos"
     
-    if groups.length == 0
+    #if groups.length == 0
      # puts "vacio"
-      vacio = true
-      groups = [1,2,3,4,5,6,7,8,9,11,12,13,14]
-    end
+      #vacio = true
+    groups = [1,2,3,4,5,6,7,8,9,11,12,13,14]
+    #end
+    respuesta = false
     groups.each do |g|
-
-      if vacio
-        pedido = JSON.parse(Bodega.Pedir(sku.to_s, 5, g.to_s).to_json)
-      else
-        pedido = JSON.parse(Bodega.Pedir(sku.to_s, 5, g.grupo.to_s).to_json)
-      end
-
-
-      ## está raro esta forma de analisar siesque se aceptó el pedido o no (no deberia ser con codes?)
-      if pedido.nil? == false
-        #puts pedido
-        pedidos.push(pedido)
-      end
-    end
-    if pedidos.length >0
-      pedidos.each do |ped|
-        if ped["aceptado"] == true
-          futuro_envio = true
+      pedido = JSON.parse(Bodega.Pedir(sku.to_s, 5, g.to_s).to_json)
+      # Si existe el pedido
+      if pedido
+        # Si se acepta el pedido
+        if pedido["aceptado"] == true
+          respuesta = true
+          #Ciclo hasta que la respuesta del grupo sea NO ENVIADO o que se cumpla la cantidad a pedir
+          while respuesta && cantidad_por_pedir > 0
+            pedido = JSON.parse(Bodega.Pedir(sku.to_s, 5, g.to_s).to_json)
+            if pedido
+              if pedido["aceptado"] == true
+                respuesta = true
+                cantidad_por_pedir -= 5
+              else
+                respuesta = false
+              end
+            else
+              respuesta = false
+            end
+          end
         end
       end
     end
-    if futuro_envio == false
+    # Si me falta por pedir ya recorridos todos los grupos
+
+    if cantidad_por_pedir>0
       #Pedir en bodega
      # puts "bodega"
       if sku > "1016"
