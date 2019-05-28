@@ -183,7 +183,7 @@ module ScheduleStock
           contador_espacio = 0
          # p ingredientes.count
           ingredientes.each do |i|
-            q_ingredient = ((i.unidades_bodega).ceil).to_i*
+            q_ingredient = ((i.unidades_bodega).ceil).to_i
           #  p "q_ingredient: "+ q_ingredient.to_s
             #p "Moviendo a despacho: ", i.sku
             if Logica.tengo_stock(i.sku.to_s, q_ingredient)
