@@ -31,8 +31,8 @@ module Oc
     end
 
 
-    def self.get_info_oc(oc_id)
-      response = HTTParty.get($uri+'obtener/'+oc_id,
+    def self.get_info_oc(id)
+      response = HTTParty.get("https://integracion-2019-dev.herokuapp.com/oc/"+'obtener/'+id.to_s,
       :headers =>{'Content-Type' => 'application/json'})
       puts "Request API OC hecha para OC de otro grupo"
       results = JSON.parse(response.to_s)
@@ -72,6 +72,7 @@ module Oc
             return results
 
     end
+
 
 
 
