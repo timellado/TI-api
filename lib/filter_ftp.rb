@@ -1,0 +1,49 @@
+
+require 'schedule_stock'
+require 'oc'
+require 'logica'
+module Filter
+  include ScheduleStock
+  include Oc
+  include Logica
+
+  def self.revisar_ftp
+
+    #quizás ordenar por prioridades
+    Ordencompra.where(estado:'creada').each do |order|
+      self.aceptar_ftp(order)
+
+
+      if order.aceptado
+        Logica.mover_productos_a_despacho_y_despachar_distribuidor(order.sku,order.cantidad,order.oc_id)
+
+      end
+    end
+
+  end
+
+
+  def self.aceptar_ftp(order,time)
+    inventory = ScheduleStock.get_inventory
+
+    #rechazo si no tengo tiempo de procesar
+    if order.fechaEntrega.to_datetime.to_i - Time.now.to_i < time
+      msn = "Rechazado por poco tiempo"
+      Oc.reject_order(order.oc_id,msn)
+      order.estado = "rechazado"
+    end
+
+    #rechazo si
+    if inventory[order['sku']] < order.cantidad
+      msn = "Rechazado por disponibilidad"
+      Oc.reject_order(order.oc_id,msn)
+      order.estado = "rechazado"
+
+    end
+
+    Oc.accept_order(order.oc_id)
+    order.estado = "aceptado"
+  end
+
+
+end
