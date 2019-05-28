@@ -41,7 +41,37 @@ module Oc
       return results
   end
 
+  def self.accept_order(oc_id)
+    response = HTTParty.post($uril+'recepcionar/'+oc_id,
+        :headers =>{'Content-Type' => 'application/json'},
+        :body =>{'id' => oc_id}.to_json)
+        puts "Aceptar orden: " +oc_id.to_s
+        results = JSON.parse(response.to_s)
+        results = results[0]
+        return results
+end
 
+def self.reject_order(oc_id,msn)
+    response = HTTParty.post($uril+'rechazar/'+oc_id,
+        :headers =>{'Content-Type' => 'application/json'},
+        :body =>{'id' => oc_id,'rechazo'=> msn}.to_json)
+        puts "Rechazar orden: " +oc_id.to_s
+        results = JSON.parse(response.to_s)
+        results = results[0]
+        return results
+
+end
+
+def self.anular_order(oc_id,msn)
+    response = HTTParty.delete($uril+'anular/'+oc_id,
+        :headers =>{'Content-Type' => 'application/json'},
+        :body =>{'id' => oc_id,'anulacion'=> msn}.to_json)
+        puts "Anular orden: " +oc_id.to_s
+        results = JSON.parse(response.to_s)
+        results = results[0]
+        return results
+
+end
 
 
 end
