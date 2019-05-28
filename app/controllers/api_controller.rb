@@ -32,7 +32,9 @@ include Oc
 
   def create_order
     #se crea la orden
+    puts "CREANDO ORDEN"
     header = request.headers["group"]
+    oc = request.parameters["oc"]
     if header.nil?
       render json: {status: "error", code: 400, message: "Empty Header"}
     elsif order_params[:cantidad].to_i > 50
@@ -48,8 +50,7 @@ include Oc
     else
       @order = Order.new(order_params)
       #Pedir a API OC la informacion de la OC
-      oc_results = Oc.get_info_oc(@order[:oc])
-
+      oc_results = Oc.get_info_oc(oc)
       ## caso en que tenemos excedente de stock
       if Logica.sku_disponible(@order[:sku],@order[:cantidad])
           @order.aceptado = true
@@ -120,6 +121,6 @@ include Oc
 
   def order_params
     defaults = { aceptado: false, despachado: false, precio: 1}
-    params.permit(:sku, :cantidad, :almacenId, :aceptado, :despachado, :precio).reverse_merge(defaults)
+    params.permit(:sku, :cantidad, :almacenId, :aceptado, :despachado, :precio, :oc).reverse_merge(defaults)
   end
 end
