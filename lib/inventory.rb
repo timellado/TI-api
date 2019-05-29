@@ -46,7 +46,7 @@ module Inventory
   end
 
   def self.get_inventory_for_group
-    min_stock = StockMinimo.get_minimum_stock_dic()
+    min_stock = StockMinimo.get_minimum_stock_dic2()
     inventory = get_inventory()
     new_inventory = []
 
