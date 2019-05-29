@@ -65,7 +65,7 @@ include Oc
         render status: 400, json: {
           message: "Formato invalido"}
       end
-        Logica.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad],@order[:almacenId])
+        Logica.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad],@order[:almacenId], oc)
 
         #Logica.despachar_a_grupo(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
 
@@ -94,7 +94,7 @@ include Oc
           render status: 400, json: {
             message: "Formato invalido"}
         end
-          Logica.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad], @order[:almacenId])
+          Logica.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad], @order[:almacenId], oc)
 
       else
         Oc.reject_order(oc,"no hay material")
