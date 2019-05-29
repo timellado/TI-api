@@ -22,8 +22,8 @@ module Inventory
       sku_product[list[0].to_s] = list[1]
     end
     almacenes_id.each do |k|
-      bod = Bodega.get_skus_almacen(k).to_json
-      results = JSON.parse(bod)
+      bod = Bodega.get_skus_almacen(k)
+      results = JSON.parse(bod.to_json)
       results.each do |i|
         if i["_id"] != Variable.v_despacho
           if diccionario_sku.key?(i["_id"])

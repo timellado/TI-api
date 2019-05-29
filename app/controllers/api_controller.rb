@@ -3,16 +3,12 @@ require 'logica'
 require 'bodega'
 require 'variable'
 require 'oc'
-require 'schedule_stock'
-
 class ApiController < ApplicationController
-
-  include ScheduleStock
-  include Inventory
-  include Logica
-  include Bodega
-  include Variable
-  include Oc
+include Inventory
+include Logica
+include Bodega
+include Variable
+include Oc
 
 
   skip_before_action :verify_authenticity_token
@@ -39,10 +35,18 @@ class ApiController < ApplicationController
     puts "CREANDO ORDEN"
     header = request.headers["group"]
     oc = request.parameters["oc"]
-
     if header.nil?
       render json: {status: "error", code: 400, message: "Empty Header"}
-
+    elsif order_params[:cantidad].to_i > 50
+      render status: 201, json: {
+        sku: order_params[:sku],
+        cantidad: order_params[:cantidad],
+        almacenId:order_params[:almacenId],
+        grupoProveedor: 10,
+        aceptado: false,
+        despachado: false,
+        precio: 1
+      }.to_json
     else
       @order = Order.new(order_params)
       #Pedir a API OC la informacion de la OC
@@ -53,7 +57,6 @@ class ApiController < ApplicationController
             @order.despachado = true
 
         if @order.save
-          Oc.accept_order(oc)
           render status: 201, json: {
             sku: @order[:sku],
             cantidad: @order[:cantidad],
@@ -64,12 +67,11 @@ class ApiController < ApplicationController
             despachado: @order[:despachado],
             precio: @order[:precio]
           }.to_json
-          
-        else
 
-          render status: 400, json: {
-            message: "Formato invalido"}
-        end
+      else
+        render status: 400, json: {
+          message: "Formato invalido"}
+      end
         Logica.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad],@order[:almacenId])
 
         #Logica.despachar_a_grupo(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
@@ -83,7 +85,6 @@ class ApiController < ApplicationController
         @order.despachado = true
 
         if @order.save
-          Oc.accept_order(oc)
           render status: 201, json: {
             sku: @order[:sku],
             cantidad: @order[:cantidad],
@@ -102,7 +103,6 @@ class ApiController < ApplicationController
           Logica.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad], @order[:almacenId])
 
       else
-        Oc.reject_order(oc,"No hay producto")
         render status: 201, json: {
           sku: @order[:sku],
           cantidad: @order[:cantidad],
