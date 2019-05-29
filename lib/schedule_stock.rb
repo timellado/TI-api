@@ -153,7 +153,7 @@ module ScheduleStock
     respuesta = false
     
     groups.each do |g|
-
+      puts "Pedir grupo: "+g.to_s+" sku:"+sku.to_s
       stock_grupo = Bodega.get_inventory_group(g)
       if stock_grupo.key?(sku.to_s)
         while cantidad_a_pedir > 0
