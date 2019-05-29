@@ -37,16 +37,7 @@ include Oc
     oc = request.parameters["oc"]
     if header.nil?
       render json: {status: "error", code: 400, message: "Empty Header"}
-    elsif order_params[:cantidad].to_i > 50
-      render status: 201, json: {
-        sku: order_params[:sku],
-        cantidad: order_params[:cantidad],
-        almacenId:order_params[:almacenId],
-        grupoProveedor: 10,
-        aceptado: false,
-        despachado: false,
-        precio: 1
-      }.to_json
+   
     else
       @order = Order.new(order_params)
       #Pedir a API OC la informacion de la OC
@@ -57,6 +48,7 @@ include Oc
             @order.despachado = true
 
         if @order.save
+          Oc.accept_order(oc)
           render status: 201, json: {
             sku: @order[:sku],
             cantidad: @order[:cantidad],
@@ -67,6 +59,7 @@ include Oc
             despachado: @order[:despachado],
             precio: @order[:precio]
           }.to_json
+          
 
       else
         render status: 400, json: {
@@ -85,6 +78,7 @@ include Oc
         @order.despachado = true
 
         if @order.save
+          Oc.accept_order(oc)
           render status: 201, json: {
             sku: @order[:sku],
             cantidad: @order[:cantidad],
@@ -103,6 +97,7 @@ include Oc
           Logica.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad], @order[:almacenId])
 
       else
+        Oc.reject_order(oc,"no hay material")
         render status: 201, json: {
           sku: @order[:sku],
           cantidad: @order[:cantidad],
