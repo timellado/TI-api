@@ -6,19 +6,19 @@ set :environment, "development"
 set :output, "log/cron.log"
 
 
-every 5.minutes do
+every 7.minutes do
     rake "clean"
 end
 
-every 3.minutes do
+every 51.minutes do
     rake "keep_min_stock"
 end
 
-every 10.minutes do
+every 11.minutes do
   rake  "obtain_ftp_order"
 end
 
-every 20.minutes do
+every 23.minutes do
     rake "clean_order_register"
 end
 
