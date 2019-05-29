@@ -19,7 +19,7 @@ module Oc
             'canal'=> canal, "urlNotificacion" => urlNotificacion}.to_json)
             results = response.parsed_response
            # p response.code, cliente, proveedor, sku, fechaEntrega,cantidad,precioUnitario,canal
-            puts results
+         #   puts results
         return results
     end
 
@@ -33,9 +33,9 @@ module Oc
 
 
     def self.get_info_oc(id)
-      response = HTTParty.get("https://integracion-2019-dev.herokuapp.com/oc/"+'obtener/'+id.to_s,
+      response = HTTParty.get("https://integracion-2019-prod.herokuapp.com/oc/"+'obtener/'+id.to_s,
       :headers =>{'Content-Type' => 'application/json'})
-      puts "Request API OC hecha para OC de otro grupo"
+   #   puts "Request API OC hecha para OC de otro grupo"
       results = JSON.parse(response.to_s)
       results = results[0]
       #self.save_data(results)
@@ -46,7 +46,7 @@ module Oc
         response = HTTParty.post($uril+'recepcionar/'+oc_id,
             :headers =>{'Content-Type' => 'application/json'},
             :body =>{'id' => oc_id}.to_json)
-            puts "Aceptar orden: " +oc_id.to_s
+           # puts "Aceptar orden: " +oc_id.to_s
             results = JSON.parse(response.to_s)
             results = results[0]
             return results
@@ -56,7 +56,7 @@ module Oc
         response = HTTParty.post($uril+'rechazar/'+oc_id,
             :headers =>{'Content-Type' => 'application/json'},
             :body =>{'id' => oc_id,'rechazo'=> msn}.to_json)
-            puts "Rechazar orden: " +oc_id.to_s
+        #    puts "Rechazar orden: " +oc_id.to_s
             results = JSON.parse(response.to_s)
             results = results[0]
             return results
@@ -67,7 +67,7 @@ module Oc
         response = HTTParty.delete($uril+'anular/'+oc_id,
             :headers =>{'Content-Type' => 'application/json'},
             :body =>{'id' => oc_id,'anulacion'=> msn}.to_json)
-            puts "Anular orden: " +oc_id.to_s
+          #  puts "Anular orden: " +oc_id.to_s
             results = JSON.parse(response.to_s)
             results = results[0]
             return results

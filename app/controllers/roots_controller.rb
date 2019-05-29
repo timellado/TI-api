@@ -22,7 +22,7 @@ class RootsController < ApplicationController
 
     @results_despacho = JSON.parse(Bodega.get_skus_almacen(@despacho).to_json)
     @results_recepcion = JSON.parse(Bodega.get_skus_almacen(@recepcion).to_json)
-    @results_pulmon = JSON.parse(Bodega.get_skus_almacen(@pulmon).to_json)
+    @results_pulmon = (Bodega.get_skus_almacen(@pulmon).to_json)
     @results_inventario1 = JSON.parse(Bodega.get_skus_almacen(@inventario1).to_json)
     @results_inventario2 = JSON.parse(Bodega.get_skus_almacen(@inventario2).to_json)
     @results_cocina = JSON.parse(Bodega.get_skus_almacen(@cocina).to_json)

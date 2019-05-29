@@ -11,10 +11,10 @@ module Filter
 
     #quizás ordenar por prioridades
     Ordencompra.where(estado:'creada').each do |order|
-      self.aceptar_ftp(order)
+      self.aceptar_ftp(order, 1000*60*60*3)
 
 
-      if order.aceptado
+      if order.estado == "aceptado"
         Logica.mover_productos_a_despacho_y_despachar_distribuidor(order.sku,order.cantidad,order.oc_id)
 
       end
@@ -24,7 +24,7 @@ module Filter
 
 
   def self.aceptar_ftp(order,time)
-    inventory = ScheduleStock.get_inventory
+    inventory = ScheduleStock.inv
 
     #rechazo si no tengo tiempo de procesar
     if order.fechaEntrega.to_datetime.to_i - Time.now.to_i < time
@@ -34,11 +34,16 @@ module Filter
     end
 
     #rechazo si
-    if inventory[order['sku']] < order.cantidad
+    if inventory.key?(order.sku)
+      if inventory[order.sku] < order.cantidad
+        msn = "Rechazado por disponibilidad"
+        Oc.reject_order(order.oc_id,msn)
+        order.estado = "rechazado"
+      end
+    else
       msn = "Rechazado por disponibilidad"
-      Oc.reject_order(order.oc_id,msn)
-      order.estado = "rechazado"
-
+        Oc.reject_order(order.oc_id,msn)
+        order.estado = "rechazado"
     end
 
     Oc.accept_order(order.oc_id)

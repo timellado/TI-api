@@ -173,17 +173,16 @@ module Bodega
                                 'almacenId' =>almacenid,
                                 'oc' => oc
                                        
-                        })
-                        
+                }.to_json)
                         status = response.code
                         
                         
-                      #  puts "Pedir grupo",grupo,status
+                        puts "Pedir grupo",grupo,status
 
                         if status == 200 || status == 201
                                 results = response.parsed_response
-                      #  puts "respondio"
-                       #         puts results
+                        puts "respondio"
+                                puts results
                                 return results
 
                         else

@@ -113,17 +113,20 @@ module ScheduleStock
   
   def self.total_space(id_almacen)
     almacenes = JSON.parse(Bodega.all_almacenes.to_json)
+    lista = []
     almacenes.each do |it|
       if it["_id"] == id_almacen
         usedS = it["usedSpace"]
         totalS = it["totalSpace"]
+        lista.push(usedS)
+        lista.push(totalS)
       end
     end
-    return [usedS,totalS]
+    return lista
   end
 
   def self.pedir_producto(sku, cantidad)
-    cantidad_por_pedir = cantidad
+    cantidad_a_pedir = cantidad
     despacho_id = Variable.v_despacho
     cocina_id = Variable.v_cocina
     #almacenes = JSON.parse(Bodega.all_almacenes.to_json)
@@ -148,8 +151,26 @@ module ScheduleStock
     groups = [1,2,3,4,5,6,7,8,9,11,12,13,14]
     #end
     respuesta = false
-    #groups.each do |g|
-     # pedido = JSON.parse(Bodega.Pedir(sku.to_s, 5, g.to_s).to_json)
+    
+    groups.each do |g|
+
+      stock_grupo = Bodega.get_inventory_group(g)
+      if stock_grupo.key?(sku.to_s)
+        while cantidad_a_pedir > 0
+          p stock_grupo[sku.to_s],"Stock grupo arriba!!!!!!"
+          if stock_grupo[sku.to_s] >= cantidad_a_pedir
+            pedido = JSON.parse(Bodega.Pedir(sku.to_s, cantidad_a_pedir, g.to_s).to_json)
+            cantidad_a_pedir-= cantidad_a_pedir
+          else
+            pedido = JSON.parse(Bodega.Pedir(sku.to_s, stock_grupo[sku.to_s], g.to_s).to_json)
+            cantidad_a_pedir-= stock_grupo[sku.to_s]
+            p "LOOP INFINITOO"
+            break
+          end
+        end
+        break if cantidad_a_pedir <= 0
+      end
+    end
       # Si existe el pedido
       #if pedido
         # Si se acepta el pedido
@@ -174,7 +195,7 @@ module ScheduleStock
     #end
     # Si me falta por pedir ya recorridos todos los grupos
 
-    if cantidad_por_pedir>0
+    if cantidad_a_pedir>0
       #Pedir en bodega
      # puts "bodega"
       if sku.to_s > "1016"
@@ -303,6 +324,15 @@ module ScheduleStock
   def self.inv
     dic = {}
     invent = Inventory.get_inventory()
+    invent.each do |a|
+      dic[a["sku"]] = a["total"]
+    end
+    return dic
+  end
+
+  def self.inv_group
+    dic = {}
+    invent = Inventory.get_inventory_for_group()
     invent.each do |a|
       dic[a["sku"]] = a["total"]
     end
