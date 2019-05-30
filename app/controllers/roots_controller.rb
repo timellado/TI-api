@@ -28,4 +28,8 @@ class RootsController < ApplicationController
     @results_cocina = JSON.parse(Bodega.get_skus_almacen(@cocina).to_json)
 
   end
+
+  def inicio
+    render
+  end
 end
