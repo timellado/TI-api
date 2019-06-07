@@ -74,3 +74,5 @@ gem 'listen', '>= 3.0.5', '< 3.2'
 
 # Sftp conection
 gem 'net-sftp'
+
+gem 'delayed_job_active_record'

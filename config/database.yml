@@ -22,5 +22,10 @@ test:
   database: db/api_test
 
 production:
-  <<: *default
-  database: db/api_production
+  host: postgresql
+  adapter: postgresql
+  pool: 5
+  encoding: unicode
+  database: railsapi_production
+  username: railsapi
+  password: <%= ENV['POSTGRES_PASSWORD'] %>
