@@ -1,0 +1,20 @@
+# docker-compose.yml
+version: '3'
+services:
+  postgresql:
+    image: postgres
+    environment:
+      - POSTGRES_USER=railsapi
+      - POSTGRES_DB=railsapi_production
+      - POSTGRES_PASSWORD=lepass
+  webapi:
+    build: .
+    restart: always
+    ports:
+      - 80:3000
+    depends_on:
+      - postgresql
+    environment:
+      - POSTGRES_PASSWORD=lepass
+      - RAILS_ENV=production
+      - RAILS_LOG_TO_STDOUT=true

@@ -5,4 +5,6 @@ Rails.application.routes.draw do
   get '/inventories' => 'api#index'
   get '/stock' => 'roots#index'
   root 'roots#inicio'
+  get '/jobs', to:'jobs#index'
+
 end
