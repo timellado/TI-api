@@ -130,7 +130,6 @@ include Variable
         end
     end
 
-
     def self.mover_productos_a_despacho_y_despachar(sku,cantidad,almacen_destino, oc)
       lista_id_sku_recepcion = self.listar_no_vencidos(Variable.v_recepcion,sku)
       lista_id_sku_i1 = self.listar_no_vencidos(Variable.v_inventario1,sku)
@@ -194,7 +193,6 @@ include Variable
         }
 
     end
-
 
     def self.validar_productores_materia_prima(sku)
       Group.find_by_grupo(10).products.each do |product|
@@ -283,6 +281,7 @@ include Variable
         return false
       end
     end
+    
     def self.sacar_de_despacho(sku, cantidad)
       almacenes = Bodega.all_almacenes()
       space_i1 = 0
@@ -323,7 +322,7 @@ include Variable
       lista_sku.each do |js|
         if js["sku"] == sku
           got_sku = true
-          stock = js["total"]
+          stock += js["total"]
         end
       end
       if stock >= cantidad

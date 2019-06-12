@@ -7,7 +7,7 @@ module Bodega
         include Sha1
         include Variable
         include Oc
-        $uri = "https://integracion-2019-prod.herokuapp.com/bodega/"
+        $uri = "https://integracion-2019-dev.herokuapp.com/bodega/"
 
 # GETS (Probados)
         #obtiene todos los alamcenes
@@ -47,7 +47,7 @@ module Bodega
          #Mover Producto a otra bodega (despacho a otro grupo)
          def self.Mover_bodega(almacenid, productid, oc)
             sha1 = Sha1.get_sha1('POST'+productid+almacenid)
-            oc = Oc.get_oc_profe_id(Group.find_by_grupo(10).id_prod, sku,(Time.now.to_i*1000 + (5*60*60*1000)) , cantidad, precio_unitario, canal)
+            oc = Oc.get_oc_profe_id(Group.find_by_grupo(10).id_dev, sku,(Time.now.to_i*1000 + (5*60*60*1000)) , cantidad, precio_unitario, canal)
             response = HTTParty.post($uri+'moveStockBodega',
             :headers =>{'Content-Type' => 'application/json',
             'Authorization'=> 'INTEGRACION grupo10:'+sha1},
@@ -163,7 +163,7 @@ module Bodega
                 canal = "b2b"
               #  p "precio vente: "+precio_venta.to_s+" lote: "+lote.to_s
                 precio_unitario = 100
-                oc = Oc.get_oc_profe_id(Group.find_by_grupo(grupo).id_prod, sku,(Time.now.to_i*1000 + (5*60*60*1000)) , cantidad, precio_unitario, canal)
+                oc = Oc.get_oc_profe_id(Group.find_by_grupo(grupo).id_dev, sku,(Time.now.to_i*1000 + (5*60*60*1000)) , cantidad, precio_unitario, canal)
 
                 begin
                         response = HTTParty.post(url+'orders',

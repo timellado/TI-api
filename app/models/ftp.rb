@@ -3,8 +3,8 @@ require 'httparty'
 class Ftp < ApplicationRecord
   def self.get_id
     puts 'it works :D'
-    sftp = Net::SFTP.start('fierro.ing.puc.cl', 'grupo10', password: 'xvHAjFqVU8W3fa4h4') ## necesitamos dos conexiones
-    Net::SFTP.start('fierro.ing.puc.cl', 'grupo10', password: 'xvHAjFqVU8W3fa4h4') do |entries|
+    sftp = Net::SFTP.start('fierro.ing.puc.cl', 'grupo10_dev', password: 'kljBJ73njcHGKh1') ## necesitamos dos conexiones
+    Net::SFTP.start('fierro.ing.puc.cl', 'grupo10_dev', password: 'kljBJ73njcHGKh1') do |entries|
       entries.dir.foreach('/pedidos10/') do |entry|
         if entry.name.include?('xml')
           date_ingreso = entry.name.split('.xml').join
@@ -43,7 +43,7 @@ class Ftp < ApplicationRecord
     end
 
   def self.get_oc_data(id)
-    response = HTTParty.get('https://integracion-2019-prod.herokuapp.com/oc/' + 'obtener/' + id,
+    response = HTTParty.get('https://integracion-2019-dev.herokuapp.com/oc/' + 'obtener/' + id,
                             headers: { 'Content-Type' => 'application/json' })
     #  puts " OC hecha"
     results = JSON.parse(response.to_s)
