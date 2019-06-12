@@ -323,7 +323,7 @@ include Variable
       lista_sku.each do |js|
         if js["sku"] == sku
           got_sku = true
-          stock = js["total"]
+          stock += js["total"]
         end
       end
       if stock >= cantidad
@@ -345,7 +345,7 @@ include Variable
         end
       end
     end
-    
+
     def self.mover_a_cocina(sku,cantidad)
       producto = Product.find_by_sku(sku)
       ingredientes = producto.ingredients
@@ -390,7 +390,7 @@ include Variable
       if totalS.to_i-usedS.to_i-2 > cantidad
         return true
       end
-      return false    
+      return false
     end
 
     def self.mover_a_cocina_para_minimo(sku, cantidad)

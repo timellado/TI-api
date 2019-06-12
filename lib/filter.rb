@@ -8,7 +8,7 @@ module Filter
   include Logica
 
   def self.revisar_ftp()
-
+    start = Time.now
     #quizás ordenar por prioridades
     Ordencompra.where(estado:'creada').each do |order|
       self.aceptar_ftp(order,1000*60*60*3)
@@ -19,6 +19,8 @@ module Filter
 
       end
     end
+    final = Time.now
+    puts "Tiempo de Crevisar ftp: " + ((final - start)/1.minute).to_s
 
   end
 
@@ -40,11 +42,11 @@ module Filter
         Oc.reject_order(order.oc_id,msn)
         order.estado = "rechazado"
       end
-    else 
+    else
       Oc.reject_order(order.oc_id,"Rechazado por disponibilidad")
       order.estado = "rechazado"
     end
-   
+
 
     Oc.accept_order(order.oc_id)
     order.estado = "aceptado"

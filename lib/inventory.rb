@@ -22,15 +22,14 @@ module Inventory
       sku_product[list[0].to_s] = list[1]
     end
     almacenes_id.each do |k|
+      next if k == Variable.v_despacho
       bod = Bodega.get_skus_almacen(k)
       results = JSON.parse(bod.to_json)
       results.each do |i|
-        if i["_id"] != Variable.v_despacho
-          if diccionario_sku.key?(i["_id"])
-            diccionario_sku[i["_id"]] += i["total"]
-          else
-            diccionario_sku[i["_id"]] = i["total"]
-          end
+        if diccionario_sku.key?(i["_id"])
+          diccionario_sku[i["_id"]] += i["total"]
+        else
+          diccionario_sku[i["_id"]] = i["total"]
         end
       end
     end
