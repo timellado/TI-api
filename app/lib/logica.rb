@@ -90,16 +90,16 @@ include Variable
         almacenes.each do |almacen|
           if almacen['recepcion'] == true
             recepcion_id = almacen['_id']
-            if almacen['usedSpace'] >0
+            if contador_espacio_usado(Variable.v_recepcion) >0
               vaciar = true
             end
           end
           if almacen['_id'] == Variable.v_inventario1
-            space_i1 = almacen['totalSpace'] - almacen['usedSpace']
+            space_i1 = contar_espacio_libre(Variable.v_inventario1)
 
           end
           if almacen['_id'] == Variable.v_inventario2
-            space_i2 = almacen['totalSpace'] - almacen['usedSpace']
+            space_i2 = contar_espacio_libre(Variable.v_inventario2)
 
           end
         end
@@ -378,15 +378,8 @@ include Variable
     end
 
     def self.revisar_espacio_cocina(cantidad)
-      almacenes = JSON.parse(Bodega.all_almacenes().to_json)
-      almacenes.each do |it|
-        if it["_id"] == cocina_id
-          usedS = it["usedSpace"]
-          totalS = it["totalSpace"]
-        end
-      end
-
-      if totalS.to_i-usedS.to_i-2 > cantidad
+      espacio_libre_cocina =  self.contar_espacio_libre(Variable.v_cocina)
+      if espacio_libre_cocina-2 > cantidad
         return true
       end
       return false    
@@ -506,6 +499,33 @@ include Variable
         end
     end
 
+    def self.contar_espacio_libre(almacenid)
+      skus = Bodega.get_skus_almacen(almacenid)
+      almacenes = Bodega.all_almacenes
+      espacio_bodega = nil
+      espacio_usado = 0
+      almacenes.each do |it|
+        if it["_id"] == almacenid
+          espacio_bodega = it["totalSpace"]
+        end
+      end
+      skus.each do |i|
+        espacio_usado += i['total']
+      end
+      p espacio_bodega
+      p espacio_usado
+      resta = espacio_bodega-espacio_usado
+      return resta
+    end
+
+    def self.contar_espacio_usado(almacenid)
+      skus = Bodega.get_skus_almacen(almacenid)
+      espacio_usado = 0
+      skus.each do |i|
+        espacio_usado += i['total']
+      end
+      return espacio_usado
+    end
 
 
 end
