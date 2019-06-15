@@ -25,6 +25,7 @@ Things you may want to cover:
 docker-compose up --build
 docker-compose exec webapi rails db:migrate
 docker-compose exec webapi rake jobs:work
+docker-compose exec webapi rake jobs:clear ->  #Elimina todos los jobs
 docker-compose exec webapi rails c
 tmux
 ```
