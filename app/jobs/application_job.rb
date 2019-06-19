@@ -1,7 +1,7 @@
 class ApplicationJob < ActiveJob::Base
   #  job = ScheduleStock.delay(run_every: 2.hours).pedir_productos_faltantes
   #  job2 = ScheduleStock.delay.clean_order_register
-  #  job3 = ScheduleStock.delay.hello_world
+  #  job3 = ScheduleStock.delay(run_at: 1.minute).hello_world
     
   #  job.update_column(:comments, "Pedir Stock ") if job.present?
   #  job2.update_column(:comments, "Borrar Order Register") if job2.present?
