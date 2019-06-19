@@ -345,7 +345,7 @@ include Variable
         end
       end
     end
-    
+
     def self.mover_a_cocina(sku,cantidad)
       producto = Product.find_by_sku(sku)
       ingredientes = producto.ingredients
@@ -390,7 +390,7 @@ include Variable
       if totalS.to_i-usedS.to_i-2 > cantidad
         return true
       end
-      return false    
+      return false
     end
 
     def self.mover_a_cocina_para_minimo(sku, cantidad)
@@ -452,13 +452,12 @@ include Variable
     end
 
     def self.mover_productos_a_despacho_y_despachar_distribuidor(sku,cantidad,oc)
+      puts "MOVIENDO----"
       lista_id_sku_recepcion = self.listar_no_vencidos(Variable.v_recepcion,sku)
       lista_id_sku_i1 = self.listar_no_vencidos(Variable.v_inventario1,sku)
       lista_id_sku_i2 = self.listar_no_vencidos(Variable.v_inventario2,sku)
       lista_id_sku_pulmon = self.listar_no_vencidos(Variable.v_pulmon,sku)
-
         cont = 0
-
         (0..lista_id_sku_recepcion.length-1).each do |i|
             if cont >= cantidad
               break
@@ -467,7 +466,6 @@ include Variable
             Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_recepcion[i][0])
             Bodega.Mover_distribuidor(lista_id_sku_recepcion[i][0],oc)
             cont = cont + 1
-
         end
 
         (0..lista_id_sku_i1.length-1).each do |i|
@@ -478,7 +476,6 @@ include Variable
             Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_i1[i][0])
             Bodega.Mover_distribuidor(lista_id_sku_i1[i][0],oc)
             cont = cont + 1
-
         end
 
         (0..lista_id_sku_i2.length-1).each do |i|
@@ -489,12 +486,9 @@ include Variable
             Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_i2[i][0])
             Bodega.Mover_distribuidor(lista_id_sku_i2[i][0],oc)
             cont = cont + 1
-
         end
 
-        self.clean_reception
 
-        while cont < cantidad do
 
           (0..lista_id_sku_pulmon.length-1).each do |i|
             product_id = lista_id_sku_pulmon[i][0]
@@ -504,7 +498,7 @@ include Variable
             cont = cont +1
 
           end
-        end
+        
     end
 
 

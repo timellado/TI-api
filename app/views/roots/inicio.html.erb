@@ -1,1 +1,27 @@
 <h1>Grupo 10</h1>
+
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Producto</th>
+      <th scope="col">Ver más</th>
+        </tr>
+  </thead>
+  <tbody>
+    <%@results_root.each do |item|%>
+      <tr>
+        <td><%if item["_id"] == @recepcion%>
+          Recepción
+          <%elsif item["_id"] == @cocina%>
+          Cocina
+          <%elsif item["_id"] == @despacho%>
+          Despacho
+          <%elsif item["_id"] == @pulmon%>
+          Pulmón
+          <%elsif item["_id"] == @inventario1%>
+          Inventario 1
+          <%elsif item["_id"] == @inventario2%>
+          Inventario 2
+          <%end%>
+        </td>

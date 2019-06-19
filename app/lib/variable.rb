@@ -1,32 +1,39 @@
 module Variable
     def self.v_recepcion
-        recepcion = '5cc7b139a823b10004d8e703'
-        return recepcion
+        recepcion_prod = '5cc7b139a823b10004d8e703'
+        recepcion_dev = '5cbd3ce444f67600049431e9'
+
+        return recepcion_dev
     end
-    
+
     def self.v_cocina
-        cocina = '5cc7b139a823b10004d8e708'
-        return cocina
+        cocina_prod = '5cc7b139a823b10004d8e708'
+        cocina_dev = '5cbd3ce444f67600049431ee'
+        return cocina_dev
     end
-    
+
     def self.v_despacho
-        despacho = '5cc7b139a823b10004d8e704'
-        return despacho
+        despacho_prod = '5cc7b139a823b10004d8e704'
+        despacho_dev = '5cbd3ce444f67600049431ea'
+        return despacho_dev
     end
 
     def self.v_pulmon
-        pulmon = '5cc7b139a823b10004d8e707'
-        return pulmon
+        pulmon_prod = '5cc7b139a823b10004d8e707'
+        pulmon_dev = '5cbd3ce444f67600049431ed'
+        return pulmon_dev
     end
 
     def self.v_inventario1
-        inventario1 = '5cc7b139a823b10004d8e705'
-        return inventario1
+        inventario1_prod = '5cc7b139a823b10004d8e705'
+        inventario1_dev = '5cbd3ce444f67600049431eb'
+        return inventario1_dev
     end
 
     def self.v_inventario2
-        inventario2 = '5cc7b139a823b10004d8e706'
-        return inventario2
+        inventario2_prod = '5cc7b139a823b10004d8e706'
+        inventario2_dev = '5cbd3ce444f67600049431ec'
+        return inventario2_dev
     end
 
 end
