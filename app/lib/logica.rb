@@ -509,6 +509,9 @@ include Variable
         end
  
           (0..lista_id_sku_pulmon.length-1).each do |i|
+            if cont >= cantidad
+              break
+            end
             product_id = lista_id_sku_pulmon[i][0]
             Bodega.Mover_almacen(Variable.v_despacho,product_id)
             Bodega.Mover_distribuidor(product_id,oc)
