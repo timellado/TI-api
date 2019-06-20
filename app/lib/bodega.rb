@@ -43,7 +43,7 @@ module Bodega
             return results
             #puts results
          end
-#MOVER (Probar)
+#MOVER (Probar
          #Mover Producto a otra bodega (despacho a otro grupo)
          def self.Mover_bodega(almacenid, productid, oc)
             sha1 = Sha1.get_sha1('POST'+productid+almacenid)

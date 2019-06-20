@@ -61,6 +61,7 @@ module Inventory
           new_dic["nombre"] = inv["nombre"]
           new_dic["total"] = resta
         else
+          next if (inv["total"]*factor).floor <= 100
           new_dic["sku"] = inv["sku"]
           new_dic["nombre"] = inv["nombre"]
           new_dic["total"] = (inv["total"]*factor).floor
