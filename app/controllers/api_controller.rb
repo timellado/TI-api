@@ -55,7 +55,7 @@ include Oc
 
         if @order.save
           Oc.accept_order(oc)
-          job = Logica.delay.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad], @order[:almacenId], oc)
+          job = Group.delay.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad], @order[:almacenId], oc)
           job.update_column(:comments, "Pedido Grupo: "+header.to_s+" SKU: "+@order[:sku].to_s+" Cantidad: "+@order[:cantidad].to_s) if job.present?
           render status: 201, json: {
             sku: @order[:sku],
