@@ -33,3 +33,15 @@ List all containers (only IDs) docker ps -aq.
 Stop all running containers. docker stop $(docker ps -aq)
 Remove all containers. docker rm $(docker ps -aq)
 Remove all images. docker rmi $(docker images -q)
+
+List all containers (only IDs)sudo docker ps -aq.
+Stop all running containers.sudo docker stop $(sudo docker ps -aq)
+Remove all containers.sudo docker rm $(sudo docker ps -aq)
+Remove all images.sudo docker rmi $sudo (docker images -q)
+
+tmux new-window
+tmux swap-window -t 1
+
+split tmux
+Ctrl + Shift + b + %
+Ctrl + Shift + b + "

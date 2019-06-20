@@ -34,7 +34,7 @@ module ScheduleStock
     #Diccionario Todas Materia Prima
     dic_all_materia_prima = StockMinimo.get_all_materia_prima
     stock_a_pedir = {}
-    factor_porcentaje = 0.7
+    factor_porcentaje = 0.5
     dic_min_stock.each do |i,j|
 
       prima = false
@@ -101,14 +101,14 @@ module ScheduleStock
   #Forma de mejorar a mi parecer puede ser: sólo pedir materias primas a los otros grupos que nosotros no podamos producir y confeccionar todo el resto
   def self.pedir_productos_faltantes
     start = Time.now
-  #  p '---------------------------------------INICIO: '+Time.now.to_s+'-----------------------------------------------------------'
+    p '---------------------------------------INICIO: '+Time.now.to_s+'-----------------------------------------------------------'
     self.pedir_materias_prima
     stock_a_pedir = self.get_stock_a_pedir
     dic_productor_materia_prima = StockMinimo.get_mi_materia_prima
     dic_all_materia_prima = StockMinimo.get_all_materia_prima
     
     stock_a_pedir.each do |i,j|
-    #  puts 'stock_a_pedir: '+i
+      puts 'stock_a_pedir: '+i
       if j > 0
         next if dic_productor_materia_prima.key?(i)
         break if i.to_i > 10000
@@ -121,7 +121,7 @@ module ScheduleStock
     end
     
     final = Time.now
-   # puts "Tiempo de pedir: " + ((final - start)/1.minute).to_s
+    puts "Tiempo de pedir: " + ((final - start)/1.minute).to_s
    # p '---------------------------------------Termino: '+Time.now.to_s+'-----------------------------------------------------------'
   
   end
@@ -348,7 +348,7 @@ module ScheduleStock
     inventario = self.inv
     skus = StockMinimo.get_product_ingredient_dic
     ingredientes_suma = self.suma_ingredientes(sku)
-    espacio_disponible = Logica.contar_espacio_libre(almacenid)-2
+    espacio_disponible = Logica.contar_espacio_libre(almacenid)-10
     lote = skus[sku]['lote']
     total_lotes = (cantidad.to_f/lote.to_f).ceil
     lotes_factibles = (espacio_disponible.to_f/ingredientes_suma.to_f).floor

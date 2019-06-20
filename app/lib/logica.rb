@@ -23,7 +23,7 @@ include Variable
                     stock = js["total"]
             end
         end
-        return got_sku && self.validar_stock(sku, cantidad_pedida, stock)
+        return got_sku
     end
 
 ## Función que valida si lo pedido por otro grupo menos el stock que tenemos es mayor
@@ -229,7 +229,7 @@ include Variable
 
     def self.validar_envio_materia_prima(sku,cantidad)
       if self.validar_productores_materia_prima(sku) == true
-        lista_sku = Inventory.get_inventory()
+        lista_sku = Inventory.get_inventory_for_group()
         stock = 0
           lista_sku.each do |js|
               if js["sku"] == sku
@@ -238,7 +238,7 @@ include Variable
           end
 
             diff = stock - cantidad
-          if diff < (1/3*stock)
+          if diff < 0
             return false
           end
 
