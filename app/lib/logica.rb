@@ -170,8 +170,8 @@ include Variable
             end
             p "moviendo SKU: "+sku.to_s+" desde recepcion, ID: "+lista_id_sku_recepcion[i][0].to_s
             Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_recepcion[i][0])
-            A = Bodega.Mover_bodega(almacen_destino,lista_id_sku_recepcion[i][0], oc)
-            p A
+            Bodega.Mover_bodega(almacen_destino,lista_id_sku_recepcion[i][0], oc)
+            p "se movio" 
             cont = cont + 1
 
         end
@@ -182,8 +182,8 @@ include Variable
           end
           p "moviendo SKU: "+sku.to_s+" desde Inv 1, ID: "+lista_id_sku_i1[i][0].to_s
             Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_i1[i][0])
-            A =Bodega.Mover_bodega(almacen_destino,lista_id_sku_i1[i][0], oc)
-            p A
+            Bodega.Mover_bodega(almacen_destino,lista_id_sku_i1[i][0], oc)
+          p "se movio"
             cont = cont + 1
 
         end
@@ -194,8 +194,8 @@ include Variable
           end
           p "moviendo SKU: "+sku.to_s+" desde Inv 1, ID: "+lista_id_sku_i2[i][0].to_s
             Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_i2[i][0])
-            A = Bodega.Mover_bodega(almacen_destino,lista_id_sku_i2[i][0], oc)
-            p A
+            Bodega.Mover_bodega(almacen_destino,lista_id_sku_i2[i][0], oc)
+            p "se movio"
             cont = cont + 1
 
         end
@@ -210,8 +210,8 @@ include Variable
             product_id = lista_id_sku_pulmon[i][0]
             p "moviendo SKU: "+sku.to_s+" desde pulmón, ID: "+product_id.to_s
             Bodega.Mover_almacen(Variable.v_despacho,product_id)
-            A = Bodega.Mover_bodega(almacen_destino,product_id, oc)
-            p A
+            Bodega.Mover_bodega(almacen_destino,product_id, oc)
+            p "se movio"
             cont = cont +1
 
           end
