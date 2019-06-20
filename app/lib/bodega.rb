@@ -45,7 +45,7 @@ module Bodega
          end
 #MOVER (Probar
          #Mover Producto a otra bodega (despacho a otro grupo)
-         def self.Mover_bodega(almacenid, productid, oc)
+         def self.Mover_bodega(sku, almacenid, productid, oc)
             sha1 = Sha1.get_sha1('POST'+productid+almacenid)
             oc = Oc.get_oc_profe_id(Group.find_by_grupo(10).id_dev, sku,(Time.now.to_i*1000 + (5*60*60*1000)) , cantidad, precio_unitario, canal)
             response = HTTParty.post($uri+'moveStockBodega',

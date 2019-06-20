@@ -170,7 +170,7 @@ include Variable
             end
             p "moviendo SKU: "+sku.to_s+" desde recepcion, ID: "+lista_id_sku_recepcion[i][0].to_s
             Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_recepcion[i][0])
-            Bodega.Mover_bodega(almacen_destino,lista_id_sku_recepcion[i][0], oc)
+            Bodega.Mover_bodega(sku, almacen_destino,lista_id_sku_recepcion[i][0], oc)
             p "se movio" 
             cont = cont + 1
 
@@ -182,7 +182,7 @@ include Variable
           end
           p "moviendo SKU: "+sku.to_s+" desde Inv 1, ID: "+lista_id_sku_i1[i][0].to_s
             Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_i1[i][0])
-            Bodega.Mover_bodega(almacen_destino,lista_id_sku_i1[i][0], oc)
+            Bodega.Mover_bodega(sku, almacen_destino,lista_id_sku_i1[i][0], oc)
           p "se movio"
             cont = cont + 1
 
@@ -194,7 +194,7 @@ include Variable
           end
           p "moviendo SKU: "+sku.to_s+" desde Inv 1, ID: "+lista_id_sku_i2[i][0].to_s
             Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_i2[i][0])
-            Bodega.Mover_bodega(almacen_destino,lista_id_sku_i2[i][0], oc)
+            Bodega.Mover_bodega(sku, almacen_destino,lista_id_sku_i2[i][0], oc)
             p "se movio"
             cont = cont + 1
 
@@ -210,7 +210,7 @@ include Variable
             product_id = lista_id_sku_pulmon[i][0]
             p "moviendo SKU: "+sku.to_s+" desde pulmón, ID: "+product_id.to_s
             Bodega.Mover_almacen(Variable.v_despacho,product_id)
-            Bodega.Mover_bodega(almacen_destino,product_id, oc)
+            Bodega.Mover_bodega(sku, almacen_destino,product_id, oc)
             p "se movio"
             cont = cont +1
 
@@ -221,7 +221,7 @@ include Variable
         lista_id = listar_sku_id_despacho(sku)
         (0..cantidad-1).each do |d| 
            Bodega.Mover_almacen(Variable.v_despacho,lista_id[d][0])
-           Bodega.Mover_bodega(almacen_destino,lista_id[d][0], oc)
+           Bodega.Mover_bodega(sku, almacen_destino,lista_id[d][0], oc)
         end
     end
 
