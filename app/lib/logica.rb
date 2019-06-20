@@ -219,10 +219,10 @@ include Variable
 
     def self.despachar_a_grupo(sku,cantidad,almacen_destino, oc)
         lista_id = listar_sku_id_despacho(sku)
-        (0..cantidad-1).each{
-           |d| Bodega.Mover_bodega(almacen_destino,lista_id[d][0], oc)
-        }
-
+        (0..cantidad-1).each do |d| 
+           Bodega.Mover_almacen(Variable.v_despacho,lista_id[d][0])
+           Bodega.Mover_bodega(almacen_destino,lista_id[d][0], oc)
+        end
     end
 
     def self.validar_productores_materia_prima(sku)

@@ -55,7 +55,7 @@ include Oc
 
         if @order.save
           Oc.accept_order(oc)
-          Logica.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad], @order[:almacenId], oc)
+          Logica.despachar_a_grupo(@order[:sku],@order[:cantidad], @order[:almacenId], oc)
           render status: 201, json: {
             sku: @order[:sku],
             cantidad: @order[:cantidad],
