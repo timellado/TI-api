@@ -235,7 +235,8 @@ include Variable
     end
 
     def self.validar_envio_materia_prima(sku,cantidad)
-      if self.validar_productores_materia_prima(sku) == true
+      dic_mi_materia = StockMinimo.get_mi_materia_prima
+      if dic_mi_materia.key?(sku)
         lista_sku = Inventory.get_inventory_for_group()
         stock = 0
           lista_sku.each do |js|
@@ -243,7 +244,6 @@ include Variable
                     stock = js["total"]
               end
           end
-
             diff = stock - cantidad
           if diff < 0
             return false
