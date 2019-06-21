@@ -55,8 +55,8 @@ include Oc
 
         if @order.save
           Oc.accept_order(oc)
-          job = Group.delay.enviar_materia(@order[:sku],@order[:cantidad], @order[:almacenId], oc)
-          job.update_column(:comments, "Enviando SKU: "+@order[:sku].to_s+" Cantidad: "+@order[:cantidad].to_s+" al Grupo: "+header.to_s) if job.present?
+          Group.enviar_materia(@order[:sku],@order[:cantidad], @order[:almacenId], oc)
+          #job.update_column(:comments, "Enviando SKU: "+@order[:sku].to_s+" Cantidad: "+@order[:cantidad].to_s+" al Grupo: "+header.to_s) if job.present?
           render status: 201, json: {
             sku: @order[:sku],
             cantidad: @order[:cantidad],
