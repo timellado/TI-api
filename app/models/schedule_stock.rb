@@ -5,304 +5,394 @@ require 'variable'
 require 'date'
 require 'product_sku'
 
-class ScheduleStock < ApplicationRecord
+module ScheduleStock
   include Inventory
   include StockMinimo
   include Logica
   include Variable
   include ProductSKU
-  def self.keep_minimum_stock
-    
-    ## entrega una lista de listas donde muestra el producto con su min stock
-    minimum_stock_list = StockMinimo.get_minimum_stock
-        
-        ## entrega una lista de lista donde muestra sku,nombre y cantidad
-        stock = self.suma_stock()
-        stock_a_pedir = {}
-    
-        minimum_stock_list.each do |mins|
-          sku_a_pedir = mins[0].to_s
-          minimo = mins[1].to_f
-          stock.each do |d|
-            if d['sku'] == sku_a_pedir
-              minimo -= d['total'].to_i
-              next if minimo <0
-            end
-          end
-    
-          ## cachar bien cuanto queremos pedir
-          minimo = (minimo * 1.3).to_f
-          producto = Product.find_by_sku(sku_a_pedir)
-          factor =  (minimo / producto.lote_produccion).ceil
-    
-          ## cuanto debemos pedir nosotros para que nosotros estemos bien
-          cantidad_a_pedir = producto.lote_produccion * factor
-    
-          if cantidad_a_pedir > 0
-            if stock_a_pedir.key?(sku_a_pedir)
-              stock_a_pedir[sku_a_pedir] += cantidad_a_pedir
-            else
-              stock_a_pedir[sku_a_pedir] = cantidad_a_pedir
-            end
-          else
-            stock_a_pedir[sku_a_pedir] = 0
-          end
-          ## se agregan al diccionario los ingredientes (PROBAR)
-          self.add_ingredientes(sku_a_pedir,minimo,stock_a_pedir)
-        end
-    
-        puts '------------------------revisar diccionario start--------------------------------------'
-        puts stock_a_pedir,"-------1--------", stock,"-------2--------"
-        puts '------------------------revisar diccionario fin--------------------------------------'
-        
-        stock_a_pedir.each do |sku, cantidad|
-          producto = Product.find_by_sku(sku)
-          factor =  (cantidad / producto.lote_produccion).ceil
-          cantidad_a_pedir = (producto.lote_produccion * factor).to_i
-          
-          stock.each do |s|
-            if s['sku'] == sku
-              cantidad -= s['total']
-              factor =  (cantidad / producto.lote_produccion).ceil
-              cantidad_a_pedir = (producto.lote_produccion * factor).to_i
-            end
-          end
-          
-          if cantidad_a_pedir>0
-            self.pedir_producto(sku, cantidad_a_pedir)
-          end
-        end
-      end
-    
-      def self.add_ingredientes(sku,cantidad,stock_a_pedir)
-        # p "ingreso a la función add con sku: "+ sku.to_s + " cantidad: "+cantidad.to_s+" stock_a_pedir: ",stock_a_pedir
-        product = Product.find_by_sku(sku)
-        factor =  (cantidad / product.lote_produccion).ceil
-        ingredientes = product.ingredients
-        inventory = self.inv()
-      #  p inv, "inven arriba", ingredientes, "ingredientes arriba"
-        if ingredientes.length >0
-          ingredientes.each do |i|
-            if inventory.key?(i.sku.to_s)
-              comparar = inventory[i.sku.to_s].to_i
-            else
-              comparar = 0
-            end
-            if i.unidades_bodega*factor > comparar
-              if stock_a_pedir.key?(i.sku.to_s)
-                stock_a_pedir[i.sku.to_s] += i.unidades_bodega * factor
-              else
-                stock_a_pedir[i.sku.to_s] = i.unidades_bodega * factor
-              end
-              add_ingredientes(i.sku.to_s,stock_a_pedir[i.sku.to_s],stock_a_pedir)
-            else
-              if stock_a_pedir.key?(i.sku.to_s)
-                stock_a_pedir[i.sku.to_s] += 0
-              else
-                stock_a_pedir[i.sku.to_s] = 0
-              end
-            end
-          end
-    
-        else
-          return
-        end
+
+
+
+  #Nueva Función cosas por pedir - genera un diccionario con las cantidades que se debe pedir por cada sku
+  def self.get_stock_a_pedir
+    #Diccionario Min Stock
+    dic_min_stock = StockMinimo.get_minimum_stock_dic2
+
+    #Diccionario Ingredientes Producto Excel
+    dic_ingredients_product = StockMinimo.get_product_ingredient_dic
+
+    #Diccionario Todos los Ingredientes Producto (incluye implicitos)
+    dic_all_ingredients_product = StockMinimo.get_product_all_ingredient_dic
+
+    #Diccionario Inventario + pedidos realizados
+    dic_inventory = self.suma_inventario_mas_pedido
+
+    #Diccionario Materia Prima
+    dic_productor_materia_prima = StockMinimo.get_mi_materia_prima
+
+    #Diccionario Todas Materia Prima
+    dic_all_materia_prima = StockMinimo.get_all_materia_prima
+    stock_a_pedir = {}
+    factor_porcentaje = 0.5
+    dic_min_stock.each do |i,j|
+
+      prima = false
+      #verifico si es materia prima o no y obtengo el lote
+      if dic_all_materia_prima.key?(i)
+        lote = dic_all_materia_prima[i]        
+        prima = true
+      else
+        lote = dic_ingredients_product[i]['lote']
+        prima = false
       end
       
-      def self.total_space(id_almacen)
-        almacenes = JSON.parse(Bodega.all_almacenes.to_json)
-        usedS = nil
-        totalS = nil
-        almacenes.each do |it|
-          if it["_id"] == id_almacen
-            usedS = it["usedSpace"]
-            totalS = it["totalSpace"]
-          end
-        end
-        return [usedS,totalS]
+      factor_lote = (factor_porcentaje*(j.to_f/lote.to_f)).ceil
+      
+      if stock_a_pedir.key?(i)
+        stock_a_pedir[i] += lote*factor_lote.to_i
+      else
+        stock_a_pedir[i] = lote*factor_lote.to_i
       end
-    
-      def self.pedir_producto(sku, cantidad)
-        cantidad_a_pedir = cantidad
-        despacho_id = Variable.v_despacho
-        cocina_id = Variable.v_cocina
-        #almacenes = JSON.parse(Bodega.all_almacenes.to_json)
-        #totalS = nil
-        #usedS = nil
-        tuplaDes = self.total_space(despacho_id)
-        tuplaCoc = self.total_space(cocina_id)
-        
-        producto = Product.find_by_sku(sku)
-    
-        #Pedir a otros grupos
-        #groups = producto.groups
-        #vacio = false
-        #futuro_envio = false
-        #pedidos = []
-        
-        #p "Pedir a grupos"
-        
-        #if groups.length == 0
-         # puts "vacio"
-          #vacio = true
-        groups = [1,2,3,4,5,6,7,8,9,11,12,13,14]
-        #end
-        respuesta = false
-        groups.each do |g|
-            stock_grupo = Bodega.get_inventory_group(g)
-            #puts "sg", stock_grupo
-       
-              if stock_grupo.key?(sku.to_s)
-                while cantidad_a_pedir > 0
-                  p stock_grupo[sku.to_s],"Stock grupo arriba!!!!!!"
-                  if stock_grupo[sku.to_s] >= cantidad_a_pedir
-                    pedido = JSON.parse(Bodega.Pedir(sku.to_s, cantidad_a_pedir, g.to_s).to_json)
-                    cantidad_a_pedir-= cantidad_a_pedir
-                  else
-                    pedido = JSON.parse(Bodega.Pedir(sku.to_s, stock_grupo[sku.to_s], g.to_s).to_json)
-                    cantidad_a_pedir-= stock_grupo[sku.to_s]
-               
-                    break
-                  end
-                end
-                break if cantidad_a_pedir <= 0
-              end
-            
-        end
-            
-    
-        if cantidad_a_pedir>0
-          #Pedir en bodega
-         # puts "bodega"
-          if sku.to_s > "1016"
-            puts "Voy a pedir "+cantidad.to_s+" de "+sku.to_s
-            ingredientes = producto.ingredients
-            factor = (cantidad / producto.lote_produccion).ceil
-            schedule = false
-            movidos = true
-            total_ingredientes = ingredientes.count
-            ingredientes_a_mover = []
-           # p "-----------------------entrando al iterador !!!!!!!!!!!!!!!!!!!!!!"
-            (0..factor-1).each do |fac|
-            #  p "------------------------------------------FAC----------------------------"+fac.to_s
-              contador_espacio = 0
-             # p ingredientes.count
-              ingredientes.each do |i|
-                q_ingredient = ((i.unidades_bodega).ceil).to_i
-              #  p "q_ingredient: "+ q_ingredient.to_s
-                #p "Moviendo a despacho: ", i.sku
-                if Logica.tengo_stock(i.sku.to_s, q_ingredient)
-                  #Logica.mover_a_despacho_para_minimo(i.sku, q_ingredient)
-                  puts "si tengo stock del ingrediente "+i.sku.to_s+" para el producto "+sku.to_s              
-                  ingredientes_a_mover.push([i.sku.to_s, q_ingredient])
-                  contador_espacio += q_ingredient
-                end
-              end
-             # p "contador_espacio: "+ contador_espacio.to_s
-             # p "ingredientesAmover: "+ ingredientes_a_mover.to_s
-              if ingredientes_a_mover.count != total_ingredientes
-    
-                puts "NO TENGO INGREDIENTES PARA "+sku.to_s
-              end
-              break if ingredientes_a_mover.count != total_ingredientes
-              if producto.tipo_produccion == "fabrica"
-                if tuplaDes[1].to_i-tuplaDes[0].to_i-2 > contador_espacio
-                  ingredientes_a_mover.each do |i|
-                      Logica.mover_a_despacho_para_minimo(i[0], i[1])
-                  end
-                end
-              else
-                if tuplaCoc[1].to_i-tuplaCoc[0].to_i-2 > contador_espacio
-                  ingredientes_a_mover.each do |i|
-                      Logica.mover_a_cocina_para_minimo(i[0], i[1])
-                  end
-                end
-              end
-             # p "------------entrandoooo a crear_pedido1------------------------------"
-              self.crear_pedido(sku.to_s, cantidad/factor)
-            end
+
+      if dic_inventory.key?(i)
+        stock_a_pedir[i] -= dic_inventory[i]
+        dic_inventory.delete(i)
+      end
+
+      if prima == false
+        dic_all_ingredients_product[i].each do |n, k|
+          next if n == 'lote'
+          next if n == 'tipo'
+          if stock_a_pedir.key?(n)
+            stock_a_pedir[n] += k*factor_lote.to_i
           else
-            puts "Voy a pedir "+sku.to_s
-            if sku.to_s == "1001" || sku.to_s == "1004" || sku.to_s == "1007" || sku.to_s == "1008" || sku.to_s == "1010" || sku.to_s == "1011" || sku.to_s == "1013" || sku.to_s == "1016"
-              #p "Fabricar materia prima: ", sku
-              self.crear_pedido(sku.to_s, cantidad*10)
-             # puts "-----------cerrar cantidad antes pedido "
-            end
+            stock_a_pedir[n] = k*factor_lote.to_i
+          end
+          if dic_inventory.key?(n)
+            stock_a_pedir[n] -= dic_inventory[n]
+            dic_inventory.delete(n)
           end
         end
       end
+    end
+
+    return stock_a_pedir.sort_by{|k,v| k.to_i}.to_h
+  end
+
+  #Devuelve un diccionario con nuestro inventario + Los productos que hemos pedido y no han llegado
+  def self.suma_inventario_mas_pedido
+    pedido = OrderRegister.all
+    inventario_dic = self.inv
+
+    pedido.each do |p|
+      if inventario_dic.key?(p["sku"])
+        inventario_dic[p["sku"]] = p[:cantidad].to_i + inventario_dic[p["sku"]].to_i
+      else
+        inventario_dic[p["sku"]] = p[:cantidad].to_i
+      end
+    end
+
+    return inventario_dic #nueva_lista_inventory
+  end
+
+  #Esta función revisa cada uno de los productos faltantes y los pide, ya sea a grupo - fabrica - cocina (aún puede mejorar)
+  #La idea es siempre pedir nuestras materias primas y sólo pedirle al resto los otros productos
+  #Forma de mejorar a mi parecer puede ser: sólo pedir materias primas a los otros grupos que nosotros no podamos producir y confeccionar todo el resto
+  def self.pedir_productos_faltantes
+    start = Time.now
+    p '---------------------------------------INICIO: '+Time.now.to_s+'-----------------------------------------------------------'
+    self.pedir_materias_prima
+    stock_a_pedir = self.get_stock_a_pedir
+    dic_productor_materia_prima = StockMinimo.get_mi_materia_prima
+    dic_all_materia_prima = StockMinimo.get_all_materia_prima
     
-      def self.crear_pedido(sku,cantidad)
-        "-----------------dentro crear_pedido---------------!!"
-        respuestaBodega = Bodega.Fabricar_gratis(sku, cantidad)
-        
-        if respuestaBodega != nil
-          respuestaBodegaPedido = respuestaBodega["created_at"].to_time
-        #  puts respuestaBodegaPedido
-          respuestaBodegaDisponible = respuestaBodega["disponible"].to_time
-         # puts respuestaBodegaDisponible
-          respuestaBodegaTiempo = respuestaBodegaDisponible.to_i - respuestaBodegaPedido.to_i
-         # puts respuestaBodegaTiempo
-          puts " ------------------Creando pedido-------------------------------" 
-         # p "Respuesta Pedido "+ respuestaBodegaPedido.to_s
-         # p "Respuesta Disponible "+ respuestaBodegaDisponible.to_s
-          respuesta = DateTime.now.to_time.to_i + respuestaBodegaTiempo
-         # p "Respuesta Tiempo "+ Time.at(respuesta).to_s
-    
-          puts OrderRegister.create(sku: sku, cantidad: cantidad, fecha_llegada: Time.at(respuesta))
-          puts " ------------------Pedido Creado-------------------------------"
+    stock_a_pedir.each do |i,j|
+      puts 'stock_a_pedir: '+i
+      if j > 0
+        next if dic_productor_materia_prima.key?(i)
+        break if i.to_i > 10000
+        if dic_all_materia_prima.key?(i)
+          restante = self.pedir_producto_a_grupos(i,j)
+        else
+          self.preparar_fabrica_y_fabricar(i,j)
         end
       end
+    end
     
-      def self.suma_stock
-        pedido = OrderRegister.all
-        inventario_dic = self.inv
-        new_dic = {}
-        nombre_sku = ProductSKU.get_sku_product
-        nueva_lista_inventory = []
-    
-        pedido.each do |p|
-          if inventario_dic.key?(p["sku"])
-            inventario_dic[p["sku"]] = p[:cantidad].to_i + inventario_dic[p["sku"]].to_i
+    final = Time.now
+    puts "Tiempo de pedir: " + ((final - start)/1.minute).to_s
+   # p '---------------------------------------Termino: '+Time.now.to_s+'-----------------------------------------------------------'
+  
+  end
+
+  #Función que toma un SKU y pide a todos los grupos la cantidad solicitada o lo máximo que presentan en su inventario devolviendo
+  #la cantidad que falta por pedir
+  def self.pedir_producto_a_grupos(sku, cantidad)
+   # p '---------------------------------------INICIO PEDIR GRUPOS----------------------------------------------------------------'
+    cantidad_a_pedir = cantidad
+    groups = [1,2,3,4,5,6,7,8,9,11,12,13,14]
+    groups.each do |g|
+      stock_grupo = Bodega.get_inventory_group(g)
+      #puts "sg", stock_grupo
+      if stock_grupo.key?(sku.to_s)
+     #   p "Stock grupo:  "+stock_grupo[sku.to_s].to_s
+        if stock_grupo[sku.to_s] != nil
+          if stock_grupo[sku.to_s] >= cantidad_a_pedir
+            ## Por qué hacemos Json.parse?
+            pedido = JSON.parse(Bodega.Pedir(sku.to_s, cantidad_a_pedir, g.to_s).to_json)
+            cantidad_a_pedir-= cantidad_a_pedir
+            break
           else
-            inventario_dic[p["sku"]] = p[:cantidad].to_i
+            pedido = JSON.parse(Bodega.Pedir(sku.to_s, stock_grupo[sku.to_s].floor, g.to_s).to_json)
+            cantidad_a_pedir-= stock_grupo[sku.to_s]
           end
-    
-        end
-    
-        nombre_sku.each do |tupla|
-          diccionario_f = {} 
-          if inventario_dic.key?(tupla[0])
-            diccionario_f["sku"] = tupla[0]
-            diccionario_f["nombre"] = tupla[1]
-            diccionario_f["total"] = inventario_dic[tupla[0]]
-            nueva_lista_inventory.push(diccionario_f)
-          end
-        end
-    
-        return nueva_lista_inventory
+          break if cantidad_a_pedir <= 0   
+        end   
       end
+    end
+   # p '---------------------------------------FINISH PEDIR GRUPOS----------------------------------------------------------------'
+    return cantidad_a_pedir
+  end
+
+  #Función que manda a hacer a fábrica o a cocina lo solicitado
+  def self.preparar_fabrica_y_fabricar(sku,cantidad)
+    #Diccionario Inventario
+    dic_inventory = self.inv
+
+    #Diccionario Ingredientes Producto Excel
+    dic_ingredients_product = StockMinimo.get_product_ingredient_dic
+
+    #Diccionario Materia Prima
+    dic_productor_materia_prima = StockMinimo.get_mi_materia_prima
+
+    #Diccionario Todas Materia Prima
+    dic_all_materia_prima = StockMinimo.get_all_materia_prima
+
+
+    #p 'tipo '+sku   #Reviso si nosotros producimos esa materia prima
+    if dic_productor_materia_prima.key?(sku)
+      return
+      #puts 'Soy una materia prima!! y me produces: '+sku
+      #factoring = (cantidad/dic_productor_materia_prima[sku]).ceil
+      #cantidad = cantidad*factoring
+      #self.crear_pedido(sku,cantidad)
+    end
+
+    #Reviso si es materia prima y no la podemos producir
+    if dic_all_materia_prima.key?(sku)
+    #  puts 'Soy una materia prima!! y NO me produces: '+sku
+      return
+    end
     
-      def self.clean_order_register
-        
-        OrderRegister.all.each do |order|
-          if order["fecha_llegada"].to_time.to_i < Time.now.to_i
-            order.delete
-          end
-            #p "start time now", order["fecha_llegada"].to_time, Time.now,"finish time"  
+    #p '---------------------------------------INICIO PEDIR FABRICA----------------------------------------------------------------'
+    #Mando a producir todo lo que pueda por lotes
+    lote = dic_ingredients_product[sku]['lote']
+    tipo = dic_ingredients_product[sku]['tipo']
+    factoring = (cantidad.to_f/dic_ingredients_product[sku]['lote'].to_f).ceil
+    cantidad = dic_ingredients_product[sku]['lote']*factoring.to_i
+    
+    #puts 'cantidad: '+cantidad.to_s+' lote: '+lote.to_s+' loop_cantidad_lotes: '+loop_cantidad_lotes.to_s
+    
+    despacho_id = Variable.v_despacho
+    cocina_id = Variable.v_cocina
+    
+    espacio_libre_despacho = Logica.contar_espacio_libre(despacho_id)
+    espacio_libre_cocina = Logica.contar_espacio_libre(cocina_id)
+    
+    
+    
+    
+    ### [espacio usado, espacio total]
+    #puts "Voy a pedir "+cantidad.to_s+" de "+sku.to_s
+    
+    ingredientes =  dic_ingredients_product[sku].keys
+    ingredientes.delete('lote')
+    ingredientes.delete('tipo')
+    
+    
+    if dic_ingredients_product[sku]["tipo"] == "fabrica"
+      tuplaLotesDes = ScheduleStock.numero_lotes_disponibles_a_producir(sku,cantidad,despacho_id)
+      if tuplaLotesDes[0] == 0
+        return false
+      end
+      if tuplaLotesDes[1] == 0
+        return false
+      end
+      (0..tuplaLotesDes[0]-1).each do |fac|
+        ingredientes_a_mover = []
+        ingredientes.each do |i|
+          q_ingredient = dic_ingredients_product[sku][i]
+         # p "ingrediente: "+i.to_s+"cantidad: "+(q_ingredient*tuplaLotesDes[1]).to_s
+          Logica.mover_a_despacho_para_minimo(i, q_ingredient*tuplaLotesDes[1])
+        end
+        if self.crear_pedido(sku, lote*tuplaLotesDes[1])
+    #      p "pedido hecho"
+        else
+          Logica.clean_despacho
         end
       end
-    
-      def self.clean
-        Logica.clean_reception()
+    end
+      
+    if dic_ingredients_product[sku]["tipo"] == "cocina"
+      tuplaLotesCoc = ScheduleStock.numero_lotes_disponibles_a_producir(sku,cantidad,cocina_id)
+      if tuplaLotesCoc[0] == 0
+      return false
       end
-    
-      def self.inv
-        dic = {}
-        invent = Inventory.get_inventory()
-        invent.each do |a|
-          dic[a["sku"]] = a["total"]
+      if tuplaLotesCoc[1] == 0
+        return false
+      end
+      (0..tuplaLotesCoc[0]-1).each do |fac|
+        ingredientes_a_mover = []
+        ingredientes.each do |i|
+          q_ingredient = dic_ingredients_product[sku][i]
+         # p "ingrediente: "+i.to_s+"cantidad: "+(q_ingredient*tuplaLotesCoc[1]).to_s
+          Logica.mover_a_cocina_para_minimo(i, q_ingredient*tuplaLotesCoc[1])    
         end
-        return dic
+        if self.crear_pedido(sku, lote*tuplaLotesCoc[1])
+    #      p "pedido hecho"
+        else
+          Logica.clean_despacho
+        end
       end
+    end
+    
+  #  p '---------------------------------------FINISH PEDIR FABRICA----------------------------------------------------------------'
+  end
+
+  #Función que limpia la tabla OrderRegister cuando ya han llegado los productos (revisa el tiempo estimado de llegada y ya pasó entonces llego el producto)
+  def self.clean_order_register
+    start = Time.now
+    OrderRegister.all.each do |order|
+      if order["fecha_llegada"].to_time.to_i < Time.now.to_i
+        order.delete
+      end
+        #p "start time now", order["fecha_llegada"].to_time, Time.now,"finish time"
+    end
+
+    final = Time.now
+  #  puts "Tiempo de CLEAN ORDER REGISTER: " + ((final - start)/1.minute).to_s
+  end
+
+  #limpia recepción
+  def self.clean
+    start = Time.now
+    Logica.clean_reception()
+    final = Time.now
+  #  puts "Tiempo de clean: " + ((final - start)/1.minute).to_s
+  end
+
+  #Devuelve un diccionario con nuestro inventario
+  def self.inv
+    dic = {}
+    invent = Inventory.get_inventory()
+    invent.each do |a|
+      dic[a["sku"]] = a["total"]
+    end
+    return dic
+  end
+
+  #Crea un pedido a la fábrica y lo guarda en OrderRegister para poder tener un registo de los pedidos
+  def self.crear_pedido(sku,cantidad)
+   # p "-----------------dentro crear_pedido---------------!!"
+    respuestaBodega = Bodega.Fabricar_gratis(sku, cantidad)
+
+    if respuestaBodega != nil
+      respuestaBodegaPedido = respuestaBodega["created_at"].to_time
+    
+      respuestaBodegaDisponible = respuestaBodega["disponible"].to_time
+     
+      respuestaBodegaTiempo = respuestaBodegaDisponible.to_i - respuestaBodegaPedido.to_i
+     
+    #  puts " ------------------Creando pedido-------------------------------"
+ 
+      respuesta = DateTime.now.to_time.to_i + respuestaBodegaTiempo
+
+
+      puts OrderRegister.create(sku: sku, cantidad: cantidad, fecha_llegada: Time.at(respuesta))
+    #  puts " ------------------Pedido Creado-------------------------------"
+    end
+  end
+
+  #función que pide todas nuestras materias primas con las cantidades necesarias
+  def self.pedir_materias_prima
+    mi_inv = self.get_stock_a_pedir
+    lote_materia = StockMinimo.get_mi_materia_prima
+    #lote_materia = StockMinimo.get_all_materia_prima
+    lote_materia.each do |i,j|
+    factor = 0
+      if mi_inv[i] > 0
+        factor = (mi_inv[i].to_f/j.to_f).ceil
+      #  p "pidiendo: "+i+' lote: '+lote_materia[i].to_s+' factor: '+factor.to_s+' inv: '+mi_inv[i].to_s
+      self.crear_pedido(i,lote_materia[i]*factor.to_i)
+      end
+    end
+  end
+
+  #Toma un SKU, busca sus ingredientes y suma el espacio total que ocupan
+  def self.suma_ingredientes(sku)
+    skus = StockMinimo.get_product_ingredient_dic
+    suma = 0
+    skus[sku].each do |i,j|
+      next if i == 'lote'
+      next if i == 'tipo'
+      suma += j
+    end
+    return suma
+  end
+
+  #Esta función toma el sku y cantidad, calcula cuanto es el máximo de lotes que puede hacer con el espacio disponible y cuantas veces debo hacer
+  #esa cantidad es para obtener los iteradores en la función fabricar
+  def self.numero_lotes_disponibles_a_producir(sku,cantidad,almacenid)
+    resultado = []
+    inventario = self.inv
+    skus = StockMinimo.get_product_ingredient_dic
+    ingredientes_suma = self.suma_ingredientes(sku)
+    espacio_disponible = Logica.contar_espacio_libre(almacenid)-10
+    lote = skus[sku]['lote']
+    total_lotes = (cantidad.to_f/lote.to_f).ceil
+    lotes_factibles = (espacio_disponible.to_f/ingredientes_suma.to_f).floor
+    contador = total_lotes
+  #  p "Espacio disponible: "+espacio_disponible.to_s
+  #  p "Suma ingredientes: "+ingredientes_suma.to_s
+    while contador > 0 do
+      puedo = true
+      skus[sku].each do |i,j|
+        next if i == 'lote'
+        next if i == 'tipo'
+        if inventario[i] == nil
+          puedo = false
+          break
+        end
+        if inventario[i]<j*contador
+          puedo = false
+          break
+        end
+      end
+      if puedo
+        break
+      end
+      contador-=1
+    end
+  #  p "Lote: "+lote.to_s
+  #  p "cantidad: "+cantidad.to_s
+  #  p "contador: "+contador.to_s
+  #  p "lotes factibles: "+ lotes_factibles.to_s
+
+    num = (contador.to_f/lotes_factibles.to_f).floor
+    if num == 0
+      resultado.push(num.to_i+1)
+      resultado.push(contador.to_i)      
+    else
+      resultado.push(num.to_i)
+      resultado.push(lotes_factibles.to_i)
+    end
+  #  p resultado
+    return resultado
+
+  end
+
+
+ 
+
 end

@@ -23,7 +23,7 @@ include Variable
                     stock = js["total"]
             end
         end
-        return got_sku && self.validar_stock(sku, cantidad_pedida, stock)
+        return got_sku
     end
 
 ## Función que valida si lo pedido por otro grupo menos el stock que tenemos es mayor
@@ -82,36 +82,22 @@ include Variable
 
     def self.clean_reception
         almacenes = Bodega.all_almacenes()
-        recepcion_id = ''
         vaciar = false
-        space_i1 = 0
-        space_i2 = 0
+        space_i1 = contar_espacio_libre(Variable.v_inventario1)
+        space_i2 = contar_espacio_libre(Variable.v_inventario2)
 
-        almacenes.each do |almacen|
-          if almacen['recepcion'] == true
-            recepcion_id = almacen['_id']
-            if almacen['usedSpace'] >0
-              vaciar = true
-            end
-          end
-          if almacen['_id'] == Variable.v_inventario1
-            space_i1 = almacen['totalSpace'] - almacen['usedSpace']
-
-          end
-          if almacen['_id'] == Variable.v_inventario2
-            space_i2 = almacen['totalSpace'] - almacen['usedSpace']
-
-          end
+        if contar_espacio_usado(Variable.v_recepcion) >0
+          vaciar = true
         end
 
         if vaciar
           #todos los sku del alamcen de recepcion
-          skus = Bodega.get_skus_almacen(recepcion_id)
+          skus = Bodega.get_skus_almacen(Variable.v_recepcion)
           #puts skus
           skus.each do |s|
             #se ve el sku cada uno
             sku = s['_id']
-            products = Bodega.get_Prod_almacen_sku(recepcion_id, sku)
+            products = Bodega.get_Prod_almacen_sku(Variable.v_recepcion, sku)
             #se obtienen los productos
             products.each do |product|
               product_id = product['_id']
@@ -125,11 +111,50 @@ include Variable
 
             end
           end
-          puts 'vacio'
+         # puts 'vacio'
 
         end
     end
 
+    def self.clean_pulmon
+      almacenes = Bodega.all_almacenes()
+      vaciar = false
+      space_i1 = contar_espacio_libre(Variable.v_inventario1)
+      space_i2 = contar_espacio_libre(Variable.v_inventario2)
+      space_recepcion = contar_espacio_libre(Variable.v_recepcion)
+
+      if contar_espacio_usado(Variable.v_pulmon) >0
+        vaciar = true
+      end
+      
+
+      if vaciar
+        #todos los sku del alamcen de recepcion
+        skus = Bodega.get_skus_almacen(Variable.v_pulmon)
+        #puts skus
+        skus.each do |s|
+          #se ve el sku cada uno
+          sku = s['_id']
+          products = Bodega.get_Prod_almacen_sku(Variable.v_pulmon, sku)
+          #se obtienen los productos
+          products.each do |product|
+            product_id = product['_id']
+            #si el 1 tiene espacio se mueve
+            if space_i1 >0
+              Bodega.Mover_almacen(Variable.v_inventario1 , product_id)
+            #si el 1 no tiene y el 2 si, se va al 2
+            elsif space_i2 >0
+              Bodega.Mover_almacen(Variable.v_inventario2 , product_id)
+            elsif space_recepcion>0
+              Bodega.Mover_almacen(Variable.v_recepcion , product_id)
+            end
+
+          end
+        end
+       # puts 'vacio'
+
+      end
+  end
 
     def self.mover_productos_a_despacho_y_despachar(sku,cantidad,almacen_destino, oc)
       lista_id_sku_recepcion = self.listar_no_vencidos(Variable.v_recepcion,sku)
@@ -143,9 +168,10 @@ include Variable
             if cont >= cantidad
               break
             end
-
+            p "moviendo SKU: "+sku.to_s+" desde recepcion, ID: "+lista_id_sku_recepcion[i][0].to_s
             Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_recepcion[i][0])
             Bodega.Mover_bodega(almacen_destino,lista_id_sku_recepcion[i][0], oc)
+            p "se movio" 
             cont = cont + 1
 
         end
@@ -154,9 +180,10 @@ include Variable
           if cont >= cantidad
             break
           end
-
+          p "moviendo SKU: "+sku.to_s+" desde Inv 1, ID: "+lista_id_sku_i1[i][0].to_s
             Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_i1[i][0])
             Bodega.Mover_bodega(almacen_destino,lista_id_sku_i1[i][0], oc)
+          p "se movio"
             cont = cont + 1
 
         end
@@ -165,36 +192,38 @@ include Variable
           if cont >= cantidad
             break
           end
-
+          p "moviendo SKU: "+sku.to_s+" desde Inv 1, ID: "+lista_id_sku_i2[i][0].to_s
             Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_i2[i][0])
             Bodega.Mover_bodega(almacen_destino,lista_id_sku_i2[i][0], oc)
+            p "se movio"
             cont = cont + 1
 
         end
 
-        self.clean_reception
+        espacio_libre_rec = self.contar_espacio_libre(Variable.v_recepcion)
 
-        while cont < cantidad do
-
+   
           (0..lista_id_sku_pulmon.length-1).each do |i|
+            if cont >= cantidad
+              break
+            end
             product_id = lista_id_sku_pulmon[i][0]
-            Bodega.Mover_almacen(Variable.v_recepcion,lista_id_sku_pulmon[i][0])
+            p "moviendo SKU: "+sku.to_s+" desde pulmón, ID: "+product_id.to_s
             Bodega.Mover_almacen(Variable.v_despacho,product_id)
             Bodega.Mover_bodega(almacen_destino,product_id, oc)
+            p "se movio"
             cont = cont +1
 
           end
-        end
     end
 
     def self.despachar_a_grupo(sku,cantidad,almacen_destino, oc)
         lista_id = listar_sku_id_despacho(sku)
-        (0..cantidad-1).each{
-           |d| Bodega.Mover_bodega(almacen_destino,lista_id[d][0], oc)
-        }
-
+        (0..cantidad-1).each do |d| 
+           Bodega.Mover_almacen(Variable.v_despacho,lista_id[d][0])
+           Bodega.Mover_bodega(almacen_destino,lista_id[d][0], oc)
+        end
     end
-
 
     def self.validar_productores_materia_prima(sku)
       Group.find_by_grupo(10).products.each do |product|
@@ -206,17 +235,17 @@ include Variable
     end
 
     def self.validar_envio_materia_prima(sku,cantidad)
-      if self.validar_productores_materia_prima(sku) == true
-        lista_sku = Inventory.get_inventory()
+      dic_mi_materia = StockMinimo.get_mi_materia_prima
+      if dic_mi_materia.key?(sku)
+        lista_sku = Inventory.get_inventory_for_group()
         stock = 0
           lista_sku.each do |js|
               if js["sku"] == sku
                     stock = js["total"]
               end
           end
-
             diff = stock - cantidad
-          if diff < (1/3*stock)
+          if diff < 0
             return false
           end
 
@@ -225,16 +254,11 @@ include Variable
     end
 
     def self.mover_a_despacho_para_minimo(sku, cantidad)
-      puts "Mover: "+cantidad.to_s+" de "+sku.to_s+" a despacho"
-      lista_sku = Inventory.get_inventory()
-      got_sku = false
-      stock = 0
-      lista_sku.each do |js|
-        if js["sku"] == sku
-          got_sku = true
-          stock = js["total"]
-        end
-      end
+    #  puts "Mover: "+cantidad.to_s+" de "+sku.to_s+" a despacho"
+
+      lista_sku = self.inv_dic()
+      stock = lista_sku[sku]
+
       if stock >= cantidad
         lista_sku_recepcion = self.listar_no_vencidos(Variable.v_recepcion,sku)
         lista_sku_i1 = self.listar_no_vencidos(Variable.v_inventario1,sku)
@@ -267,22 +291,20 @@ include Variable
           cont = cont + 1
         end
 
-        self.clean_reception
-
-        while cont < cantidad do
-
-          (0..lista_sku_pulmon.length-1).each do |i|
-            product_id = lista_sku_pulmon[i][0]
-            Bodega.Mover_almacen(Variable.v_recepcion,lista_sku_pulmon[i][0])
-            Bodega.Mover_almacen(Variable.v_despacho,product_id)
-            cont = cont +1
+        (0..lista_sku_pulmon.length-1).each do |i|
+          if cont >= cantidad
+            return true
           end
+          product_id = lista_sku_pulmon[i][0]
+          Bodega.Mover_almacen(Variable.v_despacho,product_id)
+          cont = cont +1
         end
         return true
       else
         return false
       end
     end
+    
     def self.sacar_de_despacho(sku, cantidad)
       almacenes = Bodega.all_almacenes()
       space_i1 = 0
@@ -323,7 +345,7 @@ include Variable
       lista_sku.each do |js|
         if js["sku"] == sku
           got_sku = true
-          stock = js["total"]
+          stock += js["total"]
         end
       end
       if stock >= cantidad
@@ -346,6 +368,20 @@ include Variable
       end
     end
     
+    def self.clean_cocina
+      self.clean_reception
+      cocina = Variable.v_cocina()
+      recepcion = Variable.v_recepcion()
+      @resul_cocina = JSON.parse(Bodega.get_skus_almacen(cocina).to_json)
+      @resul_cocina.each do |d|
+       # puts '########################'+d["_id"]+'####################################'
+        lista_id_no_vencidos = listar_no_vencidos(cocina,d["_id"])
+        lista_id_no_vencidos.each do |r|
+          Bodega.Mover_almacen(recepcion, r[0])
+        end
+      end
+    end
+
     def self.mover_a_cocina(sku,cantidad)
       producto = Product.find_by_sku(sku)
       ingredientes = producto.ingredients
@@ -379,30 +415,18 @@ include Variable
     end
 
     def self.revisar_espacio_cocina(cantidad)
-      almacenes = JSON.parse(Bodega.all_almacenes().to_json)
-      almacenes.each do |it|
-        if it["_id"] == cocina_id
-          usedS = it["usedSpace"]
-          totalS = it["totalSpace"]
-        end
-      end
-
-      if totalS.to_i-usedS.to_i-2 > cantidad
+      espacio_libre_cocina =  self.contar_espacio_libre(Variable.v_cocina)
+      if espacio_libre_cocina-2 > cantidad
         return true
       end
       return false    
     end
 
     def self.mover_a_cocina_para_minimo(sku, cantidad)
-      lista_sku = Inventory.get_inventory()
-      got_sku = false
-      stock = 0
-      lista_sku.each do |js|
-        if js["sku"] == sku
-          got_sku = true
-          stock = js["total"]
-        end
-      end
+      
+      lista_sku = self.inv_dic()
+      stock = lista_sku[sku]
+      
       if stock >= cantidad
         lista_sku_recepcion = self.listar_no_vencidos(Variable.v_recepcion,sku)
         lista_sku_i1 = self.listar_no_vencidos(Variable.v_inventario1,sku)
@@ -435,16 +459,15 @@ include Variable
           cont = cont + 1
         end
 
-        self.clean_reception
-
-        while cont < cantidad do
-          (0..lista_sku_pulmon.length-1).each do |i|
-            product_id = lista_sku_pulmon[i][0]
-            Bodega.Mover_almacen(Variable.v_recepcion,lista_sku_pulmon[i][0])
-            Bodega.Mover_almacen(Variable.v_cocina,product_id)
-            cont = cont +1
+        (0..lista_sku_pulmon.length-1).each do |i|
+          if cont >= cantidad
+            return true
           end
+          product_id = lista_sku_pulmon[i][0]
+          Bodega.Mover_almacen(Variable.v_cocina,product_id)
+          cont = cont +1
         end
+        
         return true
       else
         return false
@@ -491,22 +514,56 @@ include Variable
             cont = cont + 1
 
         end
-
-        self.clean_reception
-
-        while cont < cantidad do
-
+ 
           (0..lista_id_sku_pulmon.length-1).each do |i|
+            if cont >= cantidad
+              break
+            end
             product_id = lista_id_sku_pulmon[i][0]
-            Bodega.Mover_almacen(Variable.v_recepcion,lista_id_sku_pulmon[i][0])
             Bodega.Mover_almacen(Variable.v_despacho,product_id)
             Bodega.Mover_distribuidor(product_id,oc)
             cont = cont +1
 
           end
-        end
+        
     end
 
+    def self.contar_espacio_libre(almacenid)
+      skus = Bodega.get_skus_almacen(almacenid)
+      almacenes = Bodega.all_almacenes
+      espacio_bodega = nil
+      espacio_usado = 0
+      almacenes.each do |it|
+        if it["_id"] == almacenid
+          espacio_bodega = it["totalSpace"]
+        end
+      end
+      skus.each do |i|
+        espacio_usado += i['total']
+      end
+      #p espacio_bodega
+      #p espacio_usado
+      resta = espacio_bodega-espacio_usado
+      return resta
+    end
+
+    def self.contar_espacio_usado(almacenid)
+      skus = Bodega.get_skus_almacen(almacenid)
+      espacio_usado = 0
+      skus.each do |i|
+        espacio_usado += i['total']
+      end
+      return espacio_usado
+    end
+
+    def self.inv_dic
+      dic = {}
+      invent = Inventory.get_inventory()
+      invent.each do |a|
+        dic[a["sku"]] = a["total"]
+      end
+      return dic
+    end
 
 
 end

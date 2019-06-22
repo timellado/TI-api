@@ -28,8 +28,8 @@
           <%end%>
         </td>
       <td><%=item["totalSpace"]%></td>
-      <td><%=item["usedSpace"]%></td>
-      <td><%=item["totalSpace"] - item["usedSpace"]%></td>
+      <td><%=Logica.contar_espacio_usado(item["_id"])%></td>
+      <td><%=Logica.contar_espacio_libre(item["_id"])%></td>
       </tr>
     <%end%>
   </tbody>

@@ -42,36 +42,12 @@ include Oc
       @order = Order.new(order_params)
       #Pedir a API OC la informacion de la OC
       oc_results = Oc.get_info_oc(oc)
-      ## caso en que tenemos excedente de stock
-      if Logica.sku_disponible(@order[:sku],@order[:cantidad])
-          @order.aceptado = true
-            @order.despachado = true
-
-        if @order.save
-          Oc.accept_order(oc)
-          render status: 201, json: {
-            sku: @order[:sku],
-            cantidad: @order[:cantidad],
-            almacenId: @order[:almacen_id],
-            grupoProveedor: 10,
-            aceptado: @order[:aceptado],
-            ## revisar despachado
-            despachado: @order[:despachado],
-            precio: @order[:precio]
-          }.to_json
-          
-
-      else
-        render status: 400, json: {
-          message: "Formato invalido"}
-      end
-        Logica.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad],@order[:almacenId], oc)
 
         #Logica.despachar_a_grupo(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
 
 
       ## caso en que tenemos materia prima para enviar
-      elsif Logica.validar_envio_materia_prima(@order[:sku], @order[:cantidad])
+      if Logica.validar_envio_materia_prima(@order[:sku], @order[:cantidad])
 
         @order.aceptado = true
         #Logica.despachar_a_grupo(@order[:Sku],@order[:Cantidad],@order[:Almacen_id])
@@ -79,6 +55,8 @@ include Oc
 
         if @order.save
           Oc.accept_order(oc)
+          Group.enviar_materia(@order[:sku],@order[:cantidad], @order[:almacenId], oc)
+          #job.update_column(:comments, "Enviando SKU: "+@order[:sku].to_s+" Cantidad: "+@order[:cantidad].to_s+" al Grupo: "+header.to_s) if job.present?
           render status: 201, json: {
             sku: @order[:sku],
             cantidad: @order[:cantidad],
@@ -94,7 +72,6 @@ include Oc
           render status: 400, json: {
             message: "Formato invalido"}
         end
-          Logica.mover_productos_a_despacho_y_despachar(@order[:sku],@order[:cantidad], @order[:almacenId], oc)
 
       else
         Oc.reject_order(oc,"no hay material")
