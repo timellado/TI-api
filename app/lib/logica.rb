@@ -47,6 +47,8 @@ include Variable
 
   end
 
+
+
     def self.listar_sku_id(sku)
         lista_id = []
         ## Revisar almacenes
@@ -126,7 +128,7 @@ include Variable
       if contar_espacio_usado(Variable.v_pulmon) >0
         vaciar = true
       end
-      
+
 
       if vaciar
         #todos los sku del alamcen de recepcion
@@ -171,7 +173,7 @@ include Variable
             p "moviendo SKU: "+sku.to_s+" desde recepcion, ID: "+lista_id_sku_recepcion[i][0].to_s
             Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_recepcion[i][0])
             Bodega.Mover_bodega(almacen_destino,lista_id_sku_recepcion[i][0], oc)
-            p "se movio" 
+            p "se movio"
             cont = cont + 1
 
         end
@@ -202,7 +204,7 @@ include Variable
 
         espacio_libre_rec = self.contar_espacio_libre(Variable.v_recepcion)
 
-   
+
           (0..lista_id_sku_pulmon.length-1).each do |i|
             if cont >= cantidad
               break
@@ -219,7 +221,7 @@ include Variable
 
     def self.despachar_a_grupo(sku,cantidad,almacen_destino, oc)
         lista_id = listar_sku_id_despacho(sku)
-        (0..cantidad-1).each do |d| 
+        (0..cantidad-1).each do |d|
            Bodega.Mover_almacen(Variable.v_despacho,lista_id[d][0])
            Bodega.Mover_bodega(almacen_destino,lista_id[d][0], oc)
         end
@@ -304,7 +306,7 @@ include Variable
         return false
       end
     end
-    
+
     def self.sacar_de_despacho(sku, cantidad)
       almacenes = Bodega.all_almacenes()
       space_i1 = 0
@@ -367,7 +369,7 @@ include Variable
         end
       end
     end
-    
+
     def self.clean_cocina
       self.clean_reception
       cocina = Variable.v_cocina()
@@ -419,14 +421,14 @@ include Variable
       if espacio_libre_cocina-2 > cantidad
         return true
       end
-      return false    
+      return false
     end
 
     def self.mover_a_cocina_para_minimo(sku, cantidad)
-      
+
       lista_sku = self.inv_dic()
       stock = lista_sku[sku]
-      
+
       if stock >= cantidad
         lista_sku_recepcion = self.listar_no_vencidos(Variable.v_recepcion,sku)
         lista_sku_i1 = self.listar_no_vencidos(Variable.v_inventario1,sku)
@@ -467,20 +469,37 @@ include Variable
           Bodega.Mover_almacen(Variable.v_cocina,product_id)
           cont = cont +1
         end
-        
+
         return true
       else
         return false
       end
     end
 
-    def self.mover_productos_a_despacho_y_despachar_distribuidor(sku,cantidad,oc)
+    def self.mover_productos_a_despacho_y_despachar_distribuidor(order)
+      sku = order.sku
+      cantidad = order.cantidad
+      oc = order.oc_id
       lista_id_sku_recepcion = self.listar_no_vencidos(Variable.v_recepcion,sku)
       lista_id_sku_i1 = self.listar_no_vencidos(Variable.v_inventario1,sku)
       lista_id_sku_i2 = self.listar_no_vencidos(Variable.v_inventario2,sku)
       lista_id_sku_pulmon = self.listar_no_vencidos(Variable.v_pulmon,sku)
+      lista_id_sku_cocina = self.listar_no_vencidos(Variable.v_cocina,sku)
 
         cont = 0
+
+        (0..lista_id_sku_cocina.length-1).each do |i|
+            if cont >= cantidad
+              break
+            end
+
+            Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_cocina[i][0])
+            Bodega.Mover_distribuidor(lista_id_sku_cocina[i][0],oc)
+            order.estado = "finalizada"
+            order.save
+            cont = cont + 1
+
+        end
 
         (0..lista_id_sku_recepcion.length-1).each do |i|
             if cont >= cantidad
@@ -489,6 +508,8 @@ include Variable
 
             Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_recepcion[i][0])
             Bodega.Mover_distribuidor(lista_id_sku_recepcion[i][0],oc)
+            order.estado = "finalizada"
+            order.save
             cont = cont + 1
 
         end
@@ -500,6 +521,8 @@ include Variable
 
             Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_i1[i][0])
             Bodega.Mover_distribuidor(lista_id_sku_i1[i][0],oc)
+            order.estado = "finalizada"
+            order.save
             cont = cont + 1
 
         end
@@ -511,10 +534,12 @@ include Variable
 
             Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_i2[i][0])
             Bodega.Mover_distribuidor(lista_id_sku_i2[i][0],oc)
+            order.estado = "finalizada"
+            order.save
             cont = cont + 1
 
         end
- 
+
           (0..lista_id_sku_pulmon.length-1).each do |i|
             if cont >= cantidad
               break
@@ -522,10 +547,12 @@ include Variable
             product_id = lista_id_sku_pulmon[i][0]
             Bodega.Mover_almacen(Variable.v_despacho,product_id)
             Bodega.Mover_distribuidor(product_id,oc)
+            order.estado = "finalizada"
+            order.save
             cont = cont +1
 
           end
-        
+
     end
 
     def self.contar_espacio_libre(almacenid)
