@@ -317,8 +317,8 @@ module ScheduleStock
   #función que pide todas nuestras materias primas con las cantidades necesarias
   def self.pedir_materias_prima
     mi_inv = self.get_stock_a_pedir
-    #lote_materia = StockMinimo.get_mi_materia_prima
-    lote_materia = StockMinimo.get_all_materia_prima
+    lote_materia = StockMinimo.get_mi_materia_prima
+    #lote_materia = StockMinimo.get_all_materia_prima
     lote_materia.each do |i,j|
     factor = 0
       if mi_inv[i] > 0
