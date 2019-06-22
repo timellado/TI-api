@@ -23,6 +23,8 @@ class Ftp < ApplicationRecord
               content_id = content
               puts content_id
               get_oc_data(content_id)
+              #se elimina contenido
+              sftp.remove!('/pedidos/'+entry.name)
               # end if
             end # end while
           end # end if
