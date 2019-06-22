@@ -260,6 +260,69 @@ module ScheduleStock
   #  p '---------------------------------------FINISH PEDIR FABRICA----------------------------------------------------------------'
   end
 
+  def self.cocinar(sku, cantidad)
+    dic_inventory = self.inv
+
+    #Diccionario Ingredientes Producto Excel
+    dic_ingredients_product = StockMinimo.get_product_ingredient_dic
+
+    #Diccionario Materia Prima
+    dic_productor_materia_prima = StockMinimo.get_mi_materia_prima
+
+    #Diccionario Todas Materia Prima
+    dic_all_materia_prima = StockMinimo.get_all_materia_prima
+    lote = dic_ingredients_product[sku]['lote']
+    
+    factoring = (cantidad.to_f/dic_ingredients_product[sku]['lote'].to_f).ceil
+    cantidad = dic_ingredients_product[sku]['lote']*factoring.to_i
+    cocina_id = Variable.v_cocina
+    ingredientes =  dic_ingredients_product[sku].keys
+    ingredientes.delete('lote')
+    ingredientes.delete('tipo')
+
+    tuplaLotesCoc = ScheduleStock.numero_lotes_disponibles_a_producir(sku,cantidad,cocina_id)
+    if tuplaLotesCoc[0] == 0
+      return false
+    end
+    if tuplaLotesCoc[1] == 0
+      return false
+    end
+    (0..tuplaLotesCoc[0]-1).each do |fac|
+      ingredientes_a_mover = []
+      ingredientes.each do |i|
+        q_ingredient = dic_ingredients_product[sku][i]
+        # p "ingrediente: "+i.to_s+"cantidad: "+(q_ingredient*tuplaLotesCoc[1]).to_s
+        Logica.mover_a_cocina_para_minimo(i, q_ingredient*tuplaLotesCoc[1])    
+      end
+      if self.crear_pedido(sku, lote*tuplaLotesCoc[1])
+        #      p "pedido hecho"
+      else
+        Logica.clean_despacho
+      end
+    end
+  end
+
+  def self.validar_ftp(sku,cantidad)
+    dic_inventory = self.inv
+    dic_ingredients_product = StockMinimo.get_product_ingredient_dic
+    ingredientes =  dic_ingredients_product[sku].keys
+    ingredientes.delete('lote')
+    ingredientes.delete('tipo')
+
+    dic_ingredients_product[sku].each do |i,j|
+      next if i == 'lote'
+      next if i == 'tipo'
+      if dic_inventory.key?(i)
+        if j*cantidad >= dic_inventory[i]
+          return false
+        end 
+      else
+        return false
+      end
+      return true
+    end
+  end
+
   #Función que limpia la tabla OrderRegister cuando ya han llegado los productos (revisa el tiempo estimado de llegada y ya pasó entonces llego el producto)
   def self.clean_order_register
     start = Time.now

@@ -45,3 +45,4 @@ tmux swap-window -t 1
 split tmux
 Ctrl + Shift + b + %
 Ctrl + Shift + b + "
+
