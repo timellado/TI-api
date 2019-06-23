@@ -91,7 +91,7 @@ end
       p "llega a aceptar ftp"
       p order.fechaEntrega
       # rechazo si no tengo tiempo de procesar
-      now = Time.now() - 4.hours
+      now = Time.now() + 4.hours
       if order.fechaEntrega.to_datetime.to_i - now.to_i < time
         msn = 'Rechazado por poco tiempo'
         p "se rechaza ftp"
