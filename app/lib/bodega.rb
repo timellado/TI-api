@@ -7,7 +7,7 @@ module Bodega
         include Sha1
         include Variable
         include Oc
-        $uri = "https://integracion-2019-dev.herokuapp.com/bodega/"
+        $uri = "https://integracion-2019-prod.herokuapp.com/bodega/"
 
 # GETS (Probados)
         #obtiene todos los alamcenes
@@ -165,7 +165,7 @@ module Bodega
                 canal = "b2b"
               #  p "precio vente: "+precio_venta.to_s+" lote: "+lote.to_s
                 precio_unitario = 100
-                oc = Oc.get_oc_profe_id(Group.find_by_grupo(grupo).id_dev, sku,(Time.now.to_i*1000 + (5*60*60*1000)) , cantidad, precio_unitario, canal)
+                oc = Oc.get_oc_profe_id(Group.find_by_grupo(grupo).id_prod, sku,(Time.now.to_i*1000 + (5*60*60*1000)) , cantidad, precio_unitario, canal)
 
                 begin
                         response = HTTParty.post(url+'orders',

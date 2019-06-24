@@ -6,11 +6,11 @@ require 'hash'
 module Oc
 
     include Variable
-    $uril = "https://integracion-2019-dev.herokuapp.com/oc/"
+    $uril = "https://integracion-2019-prod.herokuapp.com/oc/"
     
 
     def self.get_oc_profe(proveedor, sku,fechaEntrega, cantidad, precioUnitario, canal)
-        cliente = Group.find_by_grupo(10).id_dev
+        cliente = Group.find_by_grupo(10).id_prod
         urlNotificacion = "https://www.wikipedia.org/"
         response = HTTParty.put($uril+'crear',
             :headers =>{'Content-Type' => 'application/json'},
@@ -33,7 +33,7 @@ module Oc
 
 
     def self.get_info_oc(id)
-      response = HTTParty.get("https://integracion-2019-dev.herokuapp.com/oc/"+'obtener/'+id.to_s,
+      response = HTTParty.get("https://integracion-2019-prod.herokuapp.com/oc/"+'obtener/'+id.to_s,
       :headers =>{'Content-Type' => 'application/json'})
       puts "Request API OC hecha para OC de otro grupo"
       results = JSON.parse(response.to_s)
