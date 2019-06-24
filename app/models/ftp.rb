@@ -71,9 +71,7 @@ end
     def self.validar_ftp(sku,cantidad)
       dic_inventory = ScheduleStock.inv
       dic_ingredients_product = StockMinimo.get_product_ingredient_dic
-      ingredientes =  dic_ingredients_product[sku].keys
-      ingredientes.delete('lote')
-      ingredientes.delete('tipo')
+ 
 
       dic_ingredients_product[sku].each do |i,j|
         next if i == 'lote'
@@ -82,11 +80,12 @@ end
           if j*cantidad >= dic_inventory[i]
             return false
           end
+
         else
           return false
         end
-        return true
       end
+      return true
     end
 
     def self.aceptar_ftp(order, time)
