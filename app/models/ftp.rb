@@ -1,6 +1,6 @@
 require 'net/sftp'
 require 'httparty'
-class Ftp < ApplicationRecord
+module Ftp
 
   def self.get_id
     puts 'it works :D'

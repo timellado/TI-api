@@ -17,7 +17,7 @@ end
 scheduler2 =  Rufus::Scheduler.new
 scheduler2.every '20m' :first_in => 60 do
   p 'OBTENER NUEVOS FTP'
-  FTP.get_id
+  Ftp.get_id
   p 'TERMINO FTP'
   p 'REVISAR SI LLEGARON ROLLS FTP'
   Filter.revisar_ftp
