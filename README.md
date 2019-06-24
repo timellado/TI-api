@@ -17,7 +17,7 @@ Things you may want to cover:
 
 - Services (job queues, cache servers, search engines, etc.)
 
-- Deployment instructions
+- CAMBIAR HORA
 
 - ...
 
@@ -45,3 +45,5 @@ tmux swap-window -t 1
 split tmux
 Ctrl + Shift + b + %
 Ctrl + Shift + b + "
+
+

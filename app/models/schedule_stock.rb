@@ -40,15 +40,15 @@ module ScheduleStock
       prima = false
       #verifico si es materia prima o no y obtengo el lote
       if dic_all_materia_prima.key?(i)
-        lote = dic_all_materia_prima[i]        
+        lote = dic_all_materia_prima[i]
         prima = true
       else
         lote = dic_ingredients_product[i]['lote']
         prima = false
       end
-      
+
       factor_lote = (factor_porcentaje*(j.to_f/lote.to_f)).ceil
-      
+
       if stock_a_pedir.key?(i)
         stock_a_pedir[i] += lote*factor_lote.to_i
       else
@@ -106,7 +106,7 @@ module ScheduleStock
     stock_a_pedir = self.get_stock_a_pedir
     dic_productor_materia_prima = StockMinimo.get_mi_materia_prima
     dic_all_materia_prima = StockMinimo.get_all_materia_prima
-    
+
     stock_a_pedir.each do |i,j|
       puts 'stock_a_pedir: '+i
       if j > 0
@@ -119,11 +119,11 @@ module ScheduleStock
         end
       end
     end
-    
+
     final = Time.now
     puts "Tiempo de pedir: " + ((final - start)/1.minute).to_s
    # p '---------------------------------------Termino: '+Time.now.to_s+'-----------------------------------------------------------'
-  
+
   end
 
   #Función que toma un SKU y pide a todos los grupos la cantidad solicitada o lo máximo que presentan en su inventario devolviendo
@@ -147,8 +147,8 @@ module ScheduleStock
             pedido = JSON.parse(Bodega.Pedir(sku.to_s, stock_grupo[sku.to_s].floor, g.to_s).to_json)
             cantidad_a_pedir-= stock_grupo[sku.to_s]
           end
-          break if cantidad_a_pedir <= 0   
-        end   
+          break if cantidad_a_pedir <= 0
+        end
       end
     end
    # p '---------------------------------------FINISH PEDIR GRUPOS----------------------------------------------------------------'
@@ -184,33 +184,33 @@ module ScheduleStock
     #  puts 'Soy una materia prima!! y NO me produces: '+sku
       return
     end
-    
+
     #p '---------------------------------------INICIO PEDIR FABRICA----------------------------------------------------------------'
     #Mando a producir todo lo que pueda por lotes
     lote = dic_ingredients_product[sku]['lote']
     tipo = dic_ingredients_product[sku]['tipo']
     factoring = (cantidad.to_f/dic_ingredients_product[sku]['lote'].to_f).ceil
     cantidad = dic_ingredients_product[sku]['lote']*factoring.to_i
-    
+
     #puts 'cantidad: '+cantidad.to_s+' lote: '+lote.to_s+' loop_cantidad_lotes: '+loop_cantidad_lotes.to_s
-    
+
     despacho_id = Variable.v_despacho
     cocina_id = Variable.v_cocina
-    
+
     espacio_libre_despacho = Logica.contar_espacio_libre(despacho_id)
     espacio_libre_cocina = Logica.contar_espacio_libre(cocina_id)
-    
-    
-    
-    
+
+
+
+
     ### [espacio usado, espacio total]
     #puts "Voy a pedir "+cantidad.to_s+" de "+sku.to_s
-    
+
     ingredientes =  dic_ingredients_product[sku].keys
     ingredientes.delete('lote')
     ingredientes.delete('tipo')
-    
-    
+
+
     if dic_ingredients_product[sku]["tipo"] == "fabrica"
       tuplaLotesDes = ScheduleStock.numero_lotes_disponibles_a_producir(sku,cantidad,despacho_id)
       if tuplaLotesDes[0] == 0
@@ -233,7 +233,7 @@ module ScheduleStock
         end
       end
     end
-      
+
     if dic_ingredients_product[sku]["tipo"] == "cocina"
       tuplaLotesCoc = ScheduleStock.numero_lotes_disponibles_a_producir(sku,cantidad,cocina_id)
       if tuplaLotesCoc[0] == 0
@@ -247,7 +247,7 @@ module ScheduleStock
         ingredientes.each do |i|
           q_ingredient = dic_ingredients_product[sku][i]
          # p "ingrediente: "+i.to_s+"cantidad: "+(q_ingredient*tuplaLotesCoc[1]).to_s
-          Logica.mover_a_cocina_para_minimo(i, q_ingredient*tuplaLotesCoc[1])    
+          Logica.mover_a_cocina_para_minimo(i, q_ingredient*tuplaLotesCoc[1])
         end
         if self.crear_pedido(sku, lote*tuplaLotesCoc[1])
     #      p "pedido hecho"
@@ -256,9 +256,54 @@ module ScheduleStock
         end
       end
     end
-    
+
   #  p '---------------------------------------FINISH PEDIR FABRICA----------------------------------------------------------------'
   end
+
+  def self.cocinar(sku, cantidad)
+    p 'A CONCINAR: '+sku.to_s
+    dic_inventory = self.inv
+
+    #Diccionario Ingredientes Producto Excel
+    dic_ingredients_product = StockMinimo.get_product_ingredient_dic
+
+    #Diccionario Materia Prima
+    dic_productor_materia_prima = StockMinimo.get_mi_materia_prima
+
+    #Diccionario Todas Materia Prima
+    dic_all_materia_prima = StockMinimo.get_all_materia_prima
+    lote = dic_ingredients_product[sku]['lote']
+
+    factoring = (cantidad.to_f/dic_ingredients_product[sku]['lote'].to_f).ceil
+    cantidad = dic_ingredients_product[sku]['lote']*factoring.to_i
+    cocina_id = Variable.v_cocina
+    ingredientes =  dic_ingredients_product[sku].keys
+    ingredientes.delete('lote')
+    ingredientes.delete('tipo')
+
+    tuplaLotesCoc = ScheduleStock.numero_lotes_disponibles_a_producir(sku,cantidad,cocina_id)
+    if tuplaLotesCoc[0] == 0
+      return false
+    end
+    if tuplaLotesCoc[1] == 0
+      return false
+    end
+    (0..tuplaLotesCoc[0]-1).each do |fac|
+      ingredientes_a_mover = []
+      ingredientes.each do |i|
+        q_ingredient = dic_ingredients_product[sku][i]
+        # p "ingrediente: "+i.to_s+"cantidad: "+(q_ingredient*tuplaLotesCoc[1]).to_s
+        p 'se esta moviendo a cocina: '+q_ingredient.to_s
+        Logica.mover_a_cocina_para_minimo(i, q_ingredient*tuplaLotesCoc[1])
+      end
+      if self.crear_pedido(sku, lote*tuplaLotesCoc[1])
+              p "pedido hecho: "+sku.to_s
+      
+      end
+    end
+  end
+
+
 
   #Función que limpia la tabla OrderRegister cuando ya han llegado los productos (revisa el tiempo estimado de llegada y ya pasó entonces llego el producto)
   def self.clean_order_register
@@ -299,13 +344,13 @@ module ScheduleStock
 
     if respuestaBodega != nil
       respuestaBodegaPedido = respuestaBodega["created_at"].to_time
-    
+
       respuestaBodegaDisponible = respuestaBodega["disponible"].to_time
-     
+
       respuestaBodegaTiempo = respuestaBodegaDisponible.to_i - respuestaBodegaPedido.to_i
-     
+
     #  puts " ------------------Creando pedido-------------------------------"
- 
+
       respuesta = DateTime.now.to_time.to_i + respuestaBodegaTiempo
 
 
@@ -382,7 +427,7 @@ module ScheduleStock
     num = (contador.to_f/lotes_factibles.to_f).floor
     if num == 0
       resultado.push(num.to_i+1)
-      resultado.push(contador.to_i)      
+      resultado.push(contador.to_i)
     else
       resultado.push(num.to_i)
       resultado.push(lotes_factibles.to_i)
@@ -393,6 +438,6 @@ module ScheduleStock
   end
 
 
- 
+
 
 end

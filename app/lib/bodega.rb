@@ -69,7 +69,7 @@ module Bodega
          end
 
          def self.Eliminar_producto(productid)
-               
+
                 sha1 = Sha1.get_sha1('DELETE'+productid+'hola'+'1001'+'4af9f23d8ead0e1d32000900')
                 #puts sha
                 response = HTTParty.delete($uri+'stock',
@@ -99,21 +99,21 @@ module Bodega
                                                         if almacen = Variable.v_inventario1
                                                                 self.Mover_almacen(Variable.v_despacho,product["_id"])
                                                                 self.Eliminar_producto(product["_id"])
-                                                        
+
                                                         elsif almacen == Variable.v_pulmon
                                                                 self.Mover_almacen(Variable.v_recepcion,product["_id"])
                                                                 self.Mover_almacen(Variable.v_despacho,product["_id"])
                                                                 self.Eliminar_producto(product["_id"])
                                                         end
-                                                end 
+                                                end
                                         end
-                                end 
-                        end 
+                                end
+                        end
 
                 end
                 puts "termina de eliminar"
 
-         end 
+         end
 
 
 
@@ -136,6 +136,7 @@ module Bodega
         end
 
         def self.Mover_distribuidor(productid,oc)
+                p "se esta enviando"
                 sha1 = Sha1.get_sha1('DELETE'+productid+"hola"+"1"+oc)
                 #puts sha1
                 response = HTTParty.delete($uri+'stock',
@@ -143,6 +144,8 @@ module Bodega
                 'Authorization'=> 'INTEGRACION grupo10:'+sha1},
                 :body => {'productoId'=> productid, 'oc'=> oc, 'direccion' => 'hola', 'precio' => 1}.to_json)
                 results = response.parsed_response
+                p "se envió producto a distribuidor"
+                p results
                 return results
                 #puts results
         end
@@ -172,12 +175,12 @@ module Bodega
                                 'cantidad' => cantidad,
                                 'almacenId' =>almacenid,
                                 'oc' => oc
-                                       
+
                                 }.to_json)
-                        
+
                         status = response.code
-                        
-                        
+
+
                         puts "Pedir grupo",grupo,status
 
                         if status == 200 || status == 201
@@ -213,7 +216,7 @@ module Bodega
                                         dic[a["sku"]] = a["total"]
                                 end
                                 #puts dic
-                                return dic        
+                                return dic
                         else
                                 return dic
                         end
@@ -226,5 +229,3 @@ module Bodega
 
 
 end
-
-
