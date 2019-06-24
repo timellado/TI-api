@@ -37,7 +37,8 @@ include Oc
     oc = request.parameters["oc"]
     if header.nil?
       render json: {status: "error", code: 400, message: "Empty Header"}
-   
+    elsif oc.nil?
+      render json: {status: "error", code: 400, message: "Falta oc"}
     else
       @order = Order.new(order_params)
       #Pedir a API OC la informacion de la OC
