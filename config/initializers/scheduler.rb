@@ -2,7 +2,7 @@ require 'rufus-scheduler'
 require 'logica'
 
 scheduler = Rufus::Scheduler.new
-scheduler.every '1h10m', :first_in => 60  do
+scheduler.every '45m', :first_in => 60  do
     p "START CLEAN RECEPTION"
     p "FINISH CLEAN RECEPTION"
     p "START PEDIR"
@@ -15,7 +15,7 @@ scheduler.every '1h10m', :first_in => 60  do
 end 
 
 scheduler2 =  Rufus::Scheduler.new
-scheduler2.every '20m', :first_in => 60 do
+scheduler2.every '10m', :first_in => 60 do
   p 'OBTENER NUEVOS FTP'
   Ftp.get_id
   p 'TERMINO FTP'

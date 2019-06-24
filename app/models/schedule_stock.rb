@@ -261,6 +261,7 @@ module ScheduleStock
   end
 
   def self.cocinar(sku, cantidad)
+    p 'A CONCINAR: '+sku.to_s
     dic_inventory = self.inv
 
     #Diccionario Ingredientes Producto Excel
@@ -292,12 +293,12 @@ module ScheduleStock
       ingredientes.each do |i|
         q_ingredient = dic_ingredients_product[sku][i]
         # p "ingrediente: "+i.to_s+"cantidad: "+(q_ingredient*tuplaLotesCoc[1]).to_s
+        p 'se esta moviendo a cocina: '+q_ingredient.to_s
         Logica.mover_a_cocina_para_minimo(i, q_ingredient*tuplaLotesCoc[1])
       end
       if self.crear_pedido(sku, lote*tuplaLotesCoc[1])
-        #      p "pedido hecho"
-      else
-        Logica.clean_despacho
+              p "pedido hecho: "+sku.to_s
+      
       end
     end
   end
