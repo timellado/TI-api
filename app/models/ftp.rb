@@ -96,7 +96,7 @@ end
       now = Time.now()
       if order.fechaEntrega.to_datetime.to_i - now.to_i < time
         msn = 'Rechazado por poco tiempo'
-        p "se rechaza ftp"
+        p "se rechaza ftp por tiempo"
         Oc.reject_order(order.oc_id, msn)
         order.estado = 'rechazado'
         order.save
@@ -114,7 +114,7 @@ end
         msn = 'Rechazado por disponibilidad'
         Oc.reject_order(order.oc_id, msn)
         order.estado = 'rechazado'
-        p "se rechaza ftp"
+        p "se rechaza ftp por disponibilidad"
         order.save
         return false
 
