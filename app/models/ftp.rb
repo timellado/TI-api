@@ -22,6 +22,8 @@ class Ftp < ApplicationRecord
               content = content.split('>')[1]
               content_id = content
               get_oc_data(content_id)
+              #se elimina contenido
+              sftp.remove!('/pedidos/'+entry.name)
               p content_id
               orden = Ordencompra.where(oc_id: content_id)[0]
               p orden.oc_id
@@ -91,7 +93,7 @@ end
       p "llega a aceptar ftp"
       p order.fechaEntrega
       # rechazo si no tengo tiempo de procesar sacar el +4 cuando este en el servidor
-      now = Time.now() + 4.hours
+      now = Time.now()
       if order.fechaEntrega.to_datetime.to_i - now.to_i < time
         msn = 'Rechazado por poco tiempo'
         p "se rechaza ftp"

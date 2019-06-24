@@ -1,7 +1,7 @@
 require 'oc'
 require 'logica'
 require 'stock_minimo'
-class Filter
+class Filter < ApplicationRecord
 
   def self.revisar_ftp
     # quizás ordenar por prioridades
