@@ -147,8 +147,6 @@ include Variable
             #si el 1 no tiene y el 2 si, se va al 2
             elsif space_i2 >0
               Bodega.Mover_almacen(Variable.v_inventario2 , product_id)
-            elsif space_recepcion>0
-              Bodega.Mover_almacen(Variable.v_recepcion , product_id)
             end
 
           end
@@ -591,6 +589,65 @@ include Variable
       end
       return dic
     end
+
+    def self.eliminar_sku(sku,cantidad)
+      lista_id_sku_recepcion = self.listar_no_vencidos(Variable.v_recepcion,sku)
+      lista_id_sku_i1 = self.listar_no_vencidos(Variable.v_inventario1,sku)
+      lista_id_sku_i2 = self.listar_no_vencidos(Variable.v_inventario2,sku)
+      lista_id_sku_pulmon = self.listar_no_vencidos(Variable.v_pulmon,sku)
+
+        cont = 0
+
+        (0..lista_id_sku_recepcion.length-1).each do |i|
+            if cont >= cantidad
+              break
+            end
+            p "moviendo SKU: "+sku.to_s+" desde recepcion, ID: "+lista_id_sku_recepcion[i][0].to_s
+            Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_recepcion[i][0])
+            Bodega.Eliminar_producto(lista_id_sku_recepcion[i][0])
+            p "se movio"
+            cont = cont + 1
+
+        end
+
+        (0..lista_id_sku_i1.length-1).each do |i|
+          if cont >= cantidad
+            break
+          end
+          p "moviendo SKU: "+sku.to_s+" desde Inv 1, ID: "+lista_id_sku_i1[i][0].to_s
+            Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_i1[i][0])
+            Bodega.Eliminar_producto(lista_id_sku_i1[i][0])
+          p "se movio"
+            cont = cont + 1
+
+        end
+
+        (0..lista_id_sku_i2.length-1).each do |i|
+          if cont >= cantidad
+            break
+          end
+          p "moviendo SKU: "+sku.to_s+" desde Inv 1, ID: "+lista_id_sku_i2[i][0].to_s
+            Bodega.Mover_almacen(Variable.v_despacho,lista_id_sku_i2[i][0])
+            Bodega.Eliminar_producto(lista_id_sku_i2[i][0])
+            p "se movio"
+            cont = cont + 1
+
+        end
+
+          (0..lista_id_sku_pulmon.length-1).each do |i|
+            if cont >= cantidad
+              break
+            end
+            product_id = lista_id_sku_pulmon[i][0]
+            p "moviendo SKU: "+sku.to_s+" desde pulmón, ID: "+product_id.to_s
+            Bodega.Mover_almacen(Variable.v_despacho,product_id)
+            Bodega.Eliminar_producto(product_id)
+            p "se movio"
+            cont = cont +1
+
+          end
+    end
+
 
 
 end

@@ -112,7 +112,6 @@ module Bodega
 
                 end
                 puts "termina de eliminar"
-
          end
 
 
@@ -224,7 +223,6 @@ module Bodega
                         return dic
                 end
         end
-
 
 
 

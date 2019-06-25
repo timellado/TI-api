@@ -437,7 +437,70 @@ module ScheduleStock
 
   end
 
+  def self.stock
+    #Diccionario Min Stock
+    dic_min_stock = StockMinimo.get_minimum_stock_dic2
 
+    #Diccionario Ingredientes Producto Excel
+    dic_ingredients_product = StockMinimo.get_product_ingredient_dic
+
+    #Diccionario Todos los Ingredientes Producto (incluye implicitos)
+    dic_all_ingredients_product = StockMinimo.get_product_all_ingredient_dic
+
+    #Diccionario Inventario + pedidos realizados
+    dic_inventory = self.suma_inventario_mas_pedido
+
+    #Diccionario Materia Prima
+    dic_productor_materia_prima = StockMinimo.get_mi_materia_prima
+
+    #Diccionario Todas Materia Prima
+    dic_all_materia_prima = StockMinimo.get_all_materia_prima
+    stock_a_pedir = {}
+    factor_porcentaje = 0.5
+    dic_min_stock.each do |i,j|
+
+      prima = false
+      #verifico si es materia prima o no y obtengo el lote
+      if dic_all_materia_prima.key?(i)
+        lote = dic_all_materia_prima[i]
+        prima = true
+      else
+        lote = dic_ingredients_product[i]['lote']
+        prima = false
+      end
+
+      factor_lote = (factor_porcentaje*(j.to_f/lote.to_f)).ceil
+
+      if stock_a_pedir.key?(i)
+        stock_a_pedir[i] += lote*factor_lote.to_i
+      else
+        stock_a_pedir[i] = lote*factor_lote.to_i
+      end
+
+      #if dic_inventory.key?(i)
+      #  stock_a_pedir[i] -= dic_inventory[i]
+      #  dic_inventory.delete(i)
+      #end
+
+      if prima == false
+        dic_all_ingredients_product[i].each do |n, k|
+          next if n == 'lote'
+          next if n == 'tipo'
+          if stock_a_pedir.key?(n)
+            stock_a_pedir[n] += k*factor_lote.to_i
+          else
+            stock_a_pedir[n] = k*factor_lote.to_i
+          end
+          #if dic_inventory.key?(n)
+          #  stock_a_pedir[n] -= dic_inventory[n]
+          #  dic_inventory.delete(n)
+          #end
+        end
+      end
+    end
+
+    return stock_a_pedir.sort_by{|k,v| k.to_i}.to_h
+  end
 
 
 end
