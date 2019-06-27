@@ -4,7 +4,14 @@ Rails.application.routes.draw do
   post '/orders' => 'api#create_order'
   get '/inventories' => 'api#index'
   get '/stock' => 'roots#index'
-  root 'roots#inicio'
+  root 'shop#products'
   get '/jobs', to:'jobs#index'
+
+  get '/products' => 'shop#products'
+  get '/checkout' => 'shop#checkout'
+
+  devise_for :users, controllers: {
+        sessions: 'users/sessions'
+      }
 
 end

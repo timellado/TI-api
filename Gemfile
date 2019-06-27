@@ -66,6 +66,8 @@ gem 'bootstrap'
 
 gem 'jquery-rails'
 
+gem 'devise'
+
 gem 'whenever', :require => false
 
 gem 'awesome_print', require: 'ap'
