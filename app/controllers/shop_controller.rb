@@ -6,11 +6,12 @@ class ShopController < ApplicationController
   end
 
   def products
-    @products = Inventory.get_inventory_for_group
+    @products = []#Inventory.get_inventory_for_group
     @cart = []
   end
 
   def checkout
+    @cart = []
   end
 
 
